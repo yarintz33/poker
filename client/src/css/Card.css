@@ -1,0 +1,84 @@
+.Card {
+    width: 30px;
+    height: 40px;
+    display: flex; /* Ensure the button is a flex container */
+  
+    justify-content: center; /* Center text inside the button */
+    align-items: center;
+    position: absolute; /* Absolute positioning for more control */
+  }
+  
+  .Card.top {
+    justify-content: center; /* Center text inside the button */
+    align-items: center;
+    top: 78px; /* Position above the table */
+    left: 49%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+
+  .Card.top-second {
+    justify-content: center; /* Center text inside the button */
+    align-items: center;
+    top: 78px; /* Position above the table */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .Card.top-right {
+    top: 78px; /* Position above the table */
+    left: 69%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .Card.top-right-second {
+    top: 78px; /* Position above the table */
+    left: 70%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+
+
+  .Card.bottom-right {
+    bottom: 78px; /* Position above the table */
+    left: 69%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .Card.bottom-right-second {
+    bottom: 78px; /* Position above the table */
+    left: 70%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+
+
+
+  .Card.top-left {
+    top: -20px; /* Position above the table */
+    left: 20%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .Card.right-top {
+    right: -43px; /* Position to the right of the table */
+    top: 30%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+  
+
+  .Card.bottom-left {
+    bottom: -43px; /* Position below the table */
+    left: 33%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .Card.left-bottom {
+    left: -20px; /* Position to the left of the table */
+    top: 73%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+  
+  .Card.left-top {
+    left: -43px; /* Position to the left of the table */
+    top: 30%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+  

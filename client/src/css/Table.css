@@ -1,0 +1,26 @@
+.table-centerer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2%;
+    margin-bottom: 6%;
+    
+    background-color: rgba(84, 4, 4);
+  }
+  
+  .table-container {
+    position: relative;
+    width: 800px;
+    height: 430px;
+  }
+
+  .table {
+    width: 100%; /* Ensures the image resizes based on its container */
+    height: 100%;    
+    /* mix-blend-mode: multiply; */
+  }
+  
+  .MuiBox-root {
+    z-index: 1000;
+  }
+  

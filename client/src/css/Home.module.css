@@ -1,0 +1,133 @@
+.container {
+    width: 97%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #2b2b46;
+    height:100vh;
+    color: white;
+    max-width: 1200px;
+  }
+  
+  .header {
+    padding: 20px 0;
+  }
+  
+  .greeting {
+    display: flex;
+    padding-left: 50px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .greeting h1 {
+    font-size: 28px;
+    margin: 0;
+  }
+  
+  .accountCard {
+    background-color: #27528b;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+    margin-right: 50px;
+    margin-left: 50px;
+  }
+  
+  .accountCard h2 {
+    margin: 0;
+    font-size: 18px;
+    opacity: 0.9;
+  }
+  
+  .balance {
+    margin-top: 10px;
+  }
+  
+  .amount {
+    font-size: 32px;
+    font-weight: bold;
+  }
+  
+  .label {
+    display: block;
+    font-size: 14px;
+    opacity: 0.8;
+  }
+  
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-left: 50px;
+    margin-right: 25px;
+    margin-bottom: 20px;
+  }
+  
+  .actionButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #27528b;
+    border: none;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .actionButton:hover {
+    background-color: #b2b3b4;
+  }
+  
+  .actionIcon {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .logoutButton {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    margin-right: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .logoutButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .titleContainer {
+    text-align: center;
+    padding: 20px 0;
+    background: linear-gradient(135deg, #5c7197 0%, #7485a3 100%);
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .bankTitle {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+  
+  .mo {
+    color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Arial Black', sans-serif;
+  }
+  
+  .centerText {
+    text-align: center;
+    
+  }
+  
+  .bank {
+    font-size: 60px;
+    color: #05f6bed8;
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  } 

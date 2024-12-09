@@ -1,0 +1,103 @@
+.chair {
+    width: 70px;
+    height: 70px;
+    background-color: #333;
+    display: flex; /* Ensure the button is a flex container */
+  
+    justify-content: center; /* Center text inside the button */
+    align-items: center;
+    cursor: pointer;
+    border-radius: 50%;
+    position: absolute; /* Absolute positioning for more control */
+  }
+  
+  .chair.top {
+    justify-content: center; /* Center text inside the button */
+    align-items: center;
+    top: -30px; /* Position above the table */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .chair.top-right {
+    top: -30px; /* Position above the table */
+    left: 70%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .chair.top-left {
+    top: -30px; /* Position above the table */
+    left: 30%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .chair.right-top {
+    right: -10px; /* Position to the right of the table */
+    top: 30%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+  
+  .chair.right-bottom {
+    right: -10px; /* Position to the right of the table */
+    top: 70%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+  
+  .chair.bottom {
+    bottom: -30px; /* Position below the table */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+
+  .chair.bottom-right {
+    bottom: -30px; /* Position below the table */
+    left: 70%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .chair.bottom-left {
+    bottom: -30px; /* Position below the table */
+    left: 30%; /* Center horizontally */
+    transform: translateX(-50%);
+  }
+  
+  .chair.left-bottom {
+    left: -10px; /* Position to the left of the table */
+    top: 70%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+  
+  .chair.left-top {
+    position: absolute;
+    left: -2%; /* Position to the left of the table */
+    top: 30%; /* Center vertically */
+    transform: translateY(-50%);
+  }
+
+  .chair.empty {
+    pointer-events: auto;
+  }
+
+  .chair.occupied {
+    pointer-events: none;
+  }
+
+  .player-name {
+    position: absolute;
+    top: -20px; /* Adjust position above the chair */
+    left: 50%; /* Center horizontally relative to the chair */
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    text-align: center;
+    color: #fff; /* Example color */
+  }
+
+  .player-budget {
+    position: absolute;
+    bottom: -20px; /* Adjust position below the chair */
+    left: 50%; /* Center horizontally relative to the chair */
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    text-align: center;
+    color: #fff; /* Example color */
+  }
