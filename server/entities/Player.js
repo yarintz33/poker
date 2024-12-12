@@ -1,38 +1,51 @@
 export default class Player {
-  #isParticipant;
-  #cards;
   #socketId;
+  #playerId;
+  #tableId;
+  #isParticipant;
+  #action;
   #budget;
   #name;
   #avatar;
+  #position;
+  #nextPlayer;
+  #prevPlayer;
 
-  constructor(socketID, playerID, playerName, budget, avatar) {
+  constructor(socketID, playerID, playerName, avatar) {
     this.#socketId = socketID;
-    this.#budget = budget;
     this.#name = playerName;
     this.#avatar = avatar;
     this.#isParticipant = false;
+    this.#playerId = playerID;
+    this.#budget = 0;
   }
 
   get isParticipant() {
     return this.#isParticipant;
   }
 
-  set isParticipant(bool) {
-    this.#isParticipant = bool;
+  set prevPlayer(player) {
+    this.#prevPlayer = player;
   }
 
-  get cards() {
-    return this.#cards;
+  get prevPlayer() {
+    return this.#prevPlayer;
+  }
+
+  get nextPlayer() {
+    return this.#nextPlayer;
+  }
+
+  set nextPlayer(player) {
+    this.#nextPlayer = player;
   }
 
   get socketId() {
     return this.#socketId;
   }
 
-  set cards(cards) {
-    this.#cards = cards;
-    console.log("my cards are : " + cards);
+  get tableId() {
+    return this.#tableId;
   }
 
   get name() {
@@ -47,12 +60,65 @@ export default class Player {
     return this.#avatar;
   }
 
+  set position(position) {
+    this.#position = position;
+  }
+
+  get position() {
+    return this.#position;
+  }
+
+  set budget(budget) {
+    this.#budget = budget;
+  }
+
+  get action() {
+    return this.#action;
+  }
+
+  set action(action) {
+    this.#action = action;
+  }
+
+  get budget() {
+    return this.#budget;
+  }
+
+  set isParticipant(bool) {
+    this.#isParticipant = bool;
+  }
+
+  set name(name) {
+    this.#name = name;
+  }
+
+  set avatar(avatar) {
+    this.#avatar = avatar;
+  }
+
+  set tableId(tableId) {
+    this.#tableId = tableId;
+  }
+
   toJSON() {
     return {
       name: this.#name,
-      budget: this.#budget,
       avatar: this.#avatar,
       isParticipant: this.#isParticipant,
+      playerId: this.#playerId,
+    };
+  }
+
+  toPlayerState() {
+    return {
+      name: this.#name,
+      avatar: this.#avatar,
+      isParticipant: this.#isParticipant,
+      position: this.#position,
+      budget: this.#budget,
+      action: this.#action,
+      nextPlayer: this.#nextPlayer?.position,
+      prevPlayer: this.#prevPlayer?.position,
     };
   }
 }

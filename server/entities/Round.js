@@ -1,14 +1,19 @@
 export default class Round {
-  #players;
-  constructor(dealer) {
+  /**@Type {Array<Player>} */
+  #inGame;
+  constructor(dealer, players, tableId) {
     this.dealer = dealer;
-    this.#players = [];
+    this.tableId = tableId;
+    this.#inGame = [];
+    players.forEach((player) => {
+      this.#inGame.push(player);
+    });
   }
-  start(players) {
-    this.#players = players;
-    console.log("in round.start(), players:", this.#players.size);
+  start() {
+    console.log("in round.start(), players:", this.#inGame.length);
     this.setAllPlayersParticipants();
-    this.dealer.dealPlayers(this.#players);
+    console.log(this.#inGame);
+    this.dealer.dealPlayers(this.#inGame);
 
     // wait for players response..
     this.dealer.dealFlop();
@@ -17,6 +22,10 @@ export default class Round {
   }
 
   setAllPlayersParticipants() {
-    for (const player of this.#players.values()) player.isParticipant = true;
+    for (const player of this.#inGame.values()) player.isParticipant = true;
+  }
+
+  get inGame() {
+    return this.#inGame;
   }
 }

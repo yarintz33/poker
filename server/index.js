@@ -16,7 +16,7 @@ const port = 5000;
 // Create HTTP server
 const server = http.createServer(app);
 
-// Initialize Socket.IO through socketManager and pass the tables Map
+// Initialize Socket.IO through socketManager
 initializeSocket(server);
 
 app.use(
