@@ -2,83 +2,142 @@
     width: 30px;
     height: 40px;
     display: flex; /* Ensure the button is a flex container */
-  
-    justify-content: center; /* Center text inside the button */
-    align-items: center;
+    transition: all 0.5s ease-out;
     position: absolute; /* Absolute positioning for more control */
   }
+
+  .card-initial {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .card-dealt {
+    animation: dealCard 0.5s ease-out forwards;
+  }
+
+  @keyframes dealCard {
+    0% {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      /* Final position will be set dynamically based on player position */
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  .deal-to-top-left {
+    animation: dealToTopLeft 0.5s ease-out forwards;
+  }
+
+  @keyframes dealToTopLeft {
+    0% {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      left: 30%;
+      top: 20%;
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  .Card.bottom{
+    bottom: 19%;
+  }
   
+  .Card.left{
+    left: 28%;
+  }
+
+  
+  .Card.left.second{
+    left: 29%;
+  }
+  
+  .Card.right{
+    left: 68%;
+  }
+
+  .Card.right.second{
+    left: 69%;
+  }
+
   .Card.top {
-    justify-content: center; /* Center text inside the button */
-    align-items: center;
-    top: 78px; /* Position above the table */
-    left: 49%; /* Center horizontally */
-    transform: translateX(-50%);
+    top: 19%; /* Position above the table */
   }
 
-  .Card.top-second {
-    justify-content: center; /* Center text inside the button */
-    align-items: center;
-    top: 78px; /* Position above the table */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
-  
-  .Card.top-right {
-    top: 78px; /* Position above the table */
-    left: 69%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
-  
-  .Card.top-right-second {
-    top: 78px; /* Position above the table */
-    left: 70%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
+.Card.center.second {
+  left: 49%;
+}
 
-
-  .Card.bottom-right {
-    bottom: 78px; /* Position above the table */
-    left: 69%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
-  
-  .Card.bottom-right-second {
-    bottom: 78px; /* Position above the table */
-    left: 70%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
+.Card.center {
+  left: 48%;
+}
 
 
 
-  .Card.top-left {
-    top: -20px; /* Position above the table */
-    left: 20%; /* Center horizontally */
-    transform: translateX(-50%);
+  
+  .Card.down{
+    bottom: 30%;
   }
   
-  .Card.right-top {
-    right: -43px; /* Position to the right of the table */
-    top: 30%; /* Center vertically */
-    transform: translateY(-50%);
-  }
+  .Card.down.left{
+    left: 14%;
+  } 
   
+  .Card.down.left.second{
+    bottom: 30%;
+    left: 15%;
+  } 
 
-  .Card.bottom-left {
-    bottom: -43px; /* Position below the table */
-    left: 33%; /* Center horizontally */
-    transform: translateX(-50%);
+  .Card.up{
+    bottom: 60%;
+  }
+
+  .Card.up.left{
+    left: 14%;
+  } 
+
+  .Card.up.left.second{
+    left: 15%;
+  } 
+
+  .Card.down.right{
+    bottom: 30%;
+    left: 80%;
+  } 
+
+  .Card.down.right.second{
+    bottom: 30%;
+    left: 81%;
   }
   
-  .Card.left-bottom {
-    left: -20px; /* Position to the left of the table */
-    top: 73%; /* Center vertically */
-    transform: translateY(-50%);
+  .Card.up.right{
+    left: 80%;
   }
-  
-  .Card.left-top {
-    left: -43px; /* Position to the left of the table */
-    top: 30%; /* Center vertically */
-    transform: translateY(-50%);
+
+  .Card.right-edge{
+    left: 80%;
   }
-  
+
+  .Card.right-edge.second{
+    left: 81%;
+  }
+
+  .Card.left-edge{
+    left: 14%;
+  }
+
+  .Card.left-edge.second{
+    left: 15%;
+  }
+
+  .Card.up.right.second{
+    left: 81%;
+  }
+
+ 

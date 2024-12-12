@@ -25,7 +25,7 @@ const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAv
 
 
   const handleSeatClick = () => {
-    seatInTable("1", "playerId", index, 500, "playerName", "boy.png");
+    seatInTable(index, 500);
     //setAvatar(AvatatImage); // Replace with a real avatar URL
     onClick(index);
   };

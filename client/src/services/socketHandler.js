@@ -18,12 +18,12 @@ export const connectWebSocket = () => {
   socket.connect(); // Explicitly connect when this function is called
 };
 
-export const joinToTable = (tableId, playerId) => {
+export const joinToTable = (tableId, playerId, name, avatar) => {
   if (!socket.connected) {
     console.warn("Socket not connected, attempting to connect...");
     socket.connect();
   }
-  socket.emit("joinTable", tableId, playerId);
+  socket.emit("joinTable", tableId, playerId, name, avatar);
 };
 
 export const standUp = (tableId, playerId, chairIndex) => {
@@ -35,23 +35,8 @@ export const standUp = (tableId, playerId, chairIndex) => {
   socket.emit("standUp", tableId, playerId, chairIndex);
 };
 
-export const seatInTable = (
-  tableId,
-  playerId,
-  chairIndex,
-  budget,
-  name,
-  avatar
-) => {
-  socket.emit(
-    "seatInTable",
-    tableId,
-    playerId,
-    chairIndex,
-    budget,
-    name,
-    avatar
-  );
+export const seatInTable = (chairIndex, budget) => {
+  socket.emit("seatInTable", chairIndex, budget);
 };
 
 export const closeWebSocket = () => {

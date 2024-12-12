@@ -12,73 +12,50 @@
   }
   
   .chair.top {
-    justify-content: center; /* Center text inside the button */
-    align-items: center;
-    top: -30px; /* Position above the table */
-    left: 50%; /* Center horizontally */
+    top: -6%; 
     transform: translateX(-50%);
   }
-  
-  .chair.top-right {
-    top: -30px; /* Position above the table */
-    left: 70%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
-  
-  .chair.top-left {
-    top: -30px; /* Position above the table */
-    left: 30%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
-  
-  .chair.right-top {
-    right: -10px; /* Position to the right of the table */
-    top: 30%; /* Center vertically */
-    transform: translateY(-50%);
-  }
-  
-  .chair.right-bottom {
-    right: -10px; /* Position to the right of the table */
-    top: 70%; /* Center vertically */
-    transform: translateY(-50%);
-  }
-  
   .chair.bottom {
-    bottom: -30px; /* Position below the table */
-    left: 50%; /* Center horizontally */
+    bottom: -6%; 
     transform: translateX(-50%);
   }
 
-  .chair.bottom-right {
-    bottom: -30px; /* Position below the table */
+  .chair.right {
     left: 70%; /* Center horizontally */
-    transform: translateX(-50%);
   }
-  
-  .chair.bottom-left {
-    bottom: -30px; /* Position below the table */
+  .chair.left {
     left: 30%; /* Center horizontally */
-    transform: translateX(-50%);
-  }
-  
-  .chair.left-bottom {
-    left: -10px; /* Position to the left of the table */
-    top: 70%; /* Center vertically */
-    transform: translateY(-50%);
-  }
-  
-  .chair.left-top {
-    position: absolute;
-    left: -2%; /* Position to the left of the table */
-    top: 30%; /* Center vertically */
-    transform: translateY(-50%);
   }
 
-  .chair.empty {
+  .chair.center {
+    left: 50%; /* Center horizontally */
+  }
+
+  .chair.up {
+    top: 20%; 
+    transform: translateX(-50%);
+    /* Position above the table */
+  }
+
+  .chair.down {
+    bottom: 20%; /* Position below the table */
+    transform: translateX(-50%);
+  }
+  
+  .chair.left-edge {
+    left: 4% /* Position above the table */
+  }
+
+  .chair.right-edge {
+    right: -4.5%; /* Position above the table */
+  }
+
+
+  .empty {
     pointer-events: auto;
   }
 
-  .chair.occupied {
+  .occupied {
     pointer-events: none;
   }
 

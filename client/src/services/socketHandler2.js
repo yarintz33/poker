@@ -48,8 +48,8 @@ export const connectWebSocket = (
   }
 };
 
-export const seatInTable = (tableId, playerId, chairIndex, budget) => {
-  socket.emit("seatInTable", tableId, playerId, chairIndex, budget);
+export const seatInTable = (chairIndex, budget) => {
+  socket.emit("seatInTable", chairIndex, budget);
 };
 
 export const joinToTable = (tableId, playerId) => {
