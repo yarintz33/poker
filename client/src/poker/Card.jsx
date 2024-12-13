@@ -1,9 +1,9 @@
-import BackCardImage from "../images/back-card.png";
+//import BackCardImage from "../images/back-card.png";
+//import cardImages from "../services/CardImages";
 import "../css/Card.css";
-import cardImages from "../services/CardImages";
 
-const CardOld = ({ position }) => {
-  return <img className={`Card ${position}`} src={BackCardImage} />;
+const Card = ({ position, card }) => {
+  return <img className={`Card ${position}`} src={card} />;
 };
 
-export default CardOld;
+export default Card;

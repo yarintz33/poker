@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Chair from "./Chair";
 import "../css/Table.css";
-import CardOld from "./Card";
+import Card from "./Card";
 import { useSocketListener } from "../services/socketHandler";
 import "../css/App.css";
 import { connectWebSocket, joinToTable } from "../services/socketHandler";
@@ -12,7 +12,8 @@ import TableImage from "../images/table6.png";
 import Avatar from "../images/avatar.png";
 import {Image, Button, Slider, Box } from "@mui/material";
 import { standUp } from "../services/socketHandler";
-import CardImages from "../services/CardImages";
+import BackCardImage from "../images/back-card.png";
+import cardImages from "../services/CardImages";
 
 const Table9 = () => {
   const tableLength = 10;
@@ -21,7 +22,7 @@ const Table9 = () => {
   const [betAmount, setBetAmount] = useState(100);
   const [sittingPosition, setSittingPosition] = useState(null);
   const [cards, setCards] = useState([]);
-  const [otherCards, setOtherCards] = useState([]);
+  const [myCards, setMyCards] = useState([]);
   const [tableState, setTableState] = useState({
     players: [null, null , null, null, null, null, null, null, null, dealer],
 
@@ -39,7 +40,6 @@ const Table9 = () => {
     "top left",
     "top center",
   ];
-
 
   const cardsPositions = [
     "top right",
@@ -63,21 +63,16 @@ const Table9 = () => {
     "top center",
     "top center second",
   ];
-
-  const [isDealing, setIsDealing] = useState(false);
-  const [dealtCards, setDealtCards] = useState([]);
   
     useEffect(() => {
       const tableId = "1";
       const playerId = "player123";
 
-      // First connect
       connectWebSocket();
       
-      // Then join table after connection is established
       socket.on("connect", () => {
         console.log("on connect is performing!");
-        joinToTable(tableId, playerId, "playerName", "boy.png");
+        joinToTable(tableId, playerId, "playerName", "avt1");
       });
 
       return () => {
@@ -90,7 +85,6 @@ const Table9 = () => {
     console.log(data);
     data.players.forEach((player) => {
       newPlayers[player.position] = player;
-      console.log(player);
     });
 
     setTableState({
@@ -153,33 +147,32 @@ const Table9 = () => {
     setBetAmount(newValue);
   };
 
-  const setMyCards = (cards) =>{
-    setCards(prev => [...prev, cards]);
-  }
-
   const dealCardsToPlayers = (data) =>{
     let timeout = 0;
-    const timeoutInterval = 100;
+    const timeoutInterval = 150; 
     tableState.players.map((player, index) => {
       if(player != null && index != dealer.position){
         if(index === sittingPosition){
-          setMyCards(data.cards)//
-        }else{
-          setTimeout(() => {
-            dealCard(cardsPositions[2*index]);
-            console.log(cardsPositions[2*index]);
-          }, timeout);
-          timeout += timeoutInterval;
-          setTimeout(() => {
-            dealCard(cardsPositions[2*index+1]);
-            console.log(cardsPositions[2*index+1]);
-          }, timeout);
-          timeout += timeoutInterval;
+            dealCard(timeout, cardsPositions[2*index], cardImages[data.cards[0]]);
+            timeout += timeoutInterval;
+            dealCard(timeout, cardsPositions[2*index+1], cardImages[data.cards[1]]);
+            setMyCards([data.cards[0], data.cards[1]]);
+          }else{
+            dealCard(timeout, cardsPositions[2*index], BackCardImage);
+            timeout += timeoutInterval;
+            dealCard(timeout, cardsPositions[2*index+1], BackCardImage);
         }
+        timeout += timeoutInterval;
       }
     });
     //setCards(data.cards);
   }
+
+  const dealCard = (timeout, position, img) =>{
+    setTimeout(() => {
+      setCards(prev => [...prev, {"position" :position, "card" : img}]);
+    }, timeout);
+  };
 
   const setCardsToPlayer = (players) =>{
     console.log(players);
@@ -187,39 +180,14 @@ const Table9 = () => {
     let cards = []; 
     players.map((player) => {
       if(player != null && player.isParticipant == true){
-        cards.push(cardsPositions[player.position*2]);
-        cards.push(cardsPositions[2*player.position+1]);
+        cards.push({position: cardsPositions[2*player.position], card: BackCardImage});
+        cards.push({position: cardsPositions[2*player.position+1], card: BackCardImage});
       }
     })
     console.log(cards);
-    setOtherCards(cards);
+    setCards(cards);
   }
 
-  const dealCard = (position) =>{
-    // setIsDealing(true);
-    // const cards = [
-    //   { position: 'top-left', value: 'A♠', delay: 0 },
-    //   { position: 'top-right', value: 'K♥', delay: 200 },
-    // ];
-    console.log("dealCard is performing! position : ", position);
-    setOtherCards(prev => [...prev, position]);
-  }
-
-  // const dealCards = () => {
-  //   setIsDealing(true);
-  //   // Simulate dealing cards with delays
-  //   const cards = [
-  //     { position: 'top-left', value: 'A♠', delay: 0 },
-  //     { position: 'top-right', value: 'K♥', delay: 200 },
-  //     // ... more cards
-  //   ];
-    
-  //   cards.forEach((card, index) => {
-  //     setTimeout(() => {
-  //       setDealtCards(prev => [...prev, card]);
-  //     }, card.delay);
-  //   });
-  // };
 
   return (
     <div className="table-centerer">
@@ -245,20 +213,31 @@ const Table9 = () => {
           );
         })}
 
-          {otherCards.map((card) => {
+          {cards.map((card) => {
           return (
             <>
-            <CardOld
-              key={cardsPositions[card]}
-              position={card}
+            <Card
+              key={cardsPositions[card.position]}
+              position={card.position}
+              card={card.card}
             />
-            {/* <CardOld
-              key={cardsPositions[2*index+1]}
-              position={cardsPositions[2*index+1]}
-            /> */}
             </>
           );
         })}
+
+        {/* {myCards.map((card) => {
+          return (
+            <>
+            <Card
+              key={cardsPositions[card]}
+              position={card}
+              card={CardImages[card]}
+            />
+            </>
+          );
+        })} */}
+
+        
 {
         // <CardOld position="top center" />
         // <CardOld position="top center second" />
