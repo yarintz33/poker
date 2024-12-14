@@ -2,101 +2,154 @@ import Dealer from "./Dealer.js";
 import Player from "./Player.js";
 import Round from "./Round.js";
 import { getIO } from "../services/ioService.js";
+import PlayerNode from "./PlayerNode.js";
+import PlayersList from "./PlayersList.js";
 
 export default class Table {
   #numOfChairs;
   #tableId;
   /** @type {Array<String>} */
   #inRoom;
-  /** @type {Map<Number, Player>} */
-  #players; //(seated in a chair already)
   /** @type {Dealer} */
   #dealer;
   /** @type {Round} */
   #round;
   #bigBlind;
 
+  #playersList;
+
   constructor(numOfChairs, tableId) {
     this.#inRoom = [];
-    this.#players = new Map();
     this.#dealer = new Dealer(this.#tableId);
     this.#round = null;
     this.#tableId = tableId;
     this.#numOfChairs = numOfChairs; //max players in this table
+    this.#playersList = new PlayersList();
+  }
+
+  onFinish(round) {
+    if (this.#playersList.getSize() >= 2) {
+      this.round.start();
+    }
   }
 
   start() {
-    this.round = new Round(this.dealer, this.players, this.#tableId);
+    this.round = new Round(
+      this.dealer,
+      this.#playersList.copy(),
+      this.#tableId,
+      this.onFinish
+    );
     this.round.start();
   }
 
-  /**@type {Player} */
-  addPlayer(player) {
-    if (this.#players.get(player.position) == null) {
-      this.insertPlayerToCircularLinkedList(player);
-      this.#players.set(player.position, player);
-      if (this.#players.size >= 2) {
-        this.start();
-      }
+  /**@type {PlayerNode} */
+  addPlayer(playerNode, position) {
+    this.#playersList.add(playerNode, position);
+    if (this.#playersList.getSize() >= 2) {
+      this.start();
     }
-    console.log(this.#players);
+    console.log(this.#playersList);
   }
 
-  isBetween(player, current, next) {
-    return (
-      (player.position > current.position && player.position < next.position) ||
-      (current.position > next.position &&
-        (player.position > current.position || player.position < next.position))
-    );
-  }
+  // isBetween(player, current, next) {
+  //   return (
+  //     (player.position > current.position && player.position < next.position) ||
+  //     (current.position > next.position &&
+  //       (player.position > current.position || player.position < next.position))
+  //   );
+  // }
 
-  insertPlayerToCircularLinkedList(player) {
-    let currentPlayer = this.players.values().next().value;
-    if (this.#players.size == 0) {
-      return;
-    }
+  // copyCircularLinkedList() {
+  //   let root = this.#playersCircularList.root;
+  //   let last = root.prev;
+  //   let newRoot = root.clone();
+  //   let newList = { root: newRoot, size: this.#playersCircularList.size };
+  //   while (root != last) {
+  //     let newNode = root.next.clone();
+  //     newRoot.next = newNode;
+  //     newNode.prev = newRoot;
+  //     newRoot = newNode;
+  //     root = root.next;
+  //   }
+  //   newRoot.next = newList.root;
+  //   newList.root.prev = newRoot;
+  //   return newList;
+  // }
 
-    if (this.#players.size == 1) {
-      player.prevPlayer = currentPlayer;
-      player.nextPlayer = currentPlayer;
-      currentPlayer.prevPlayer = player;
-      currentPlayer.nextPlayer = player;
-      return;
-    }
+  // isBetween(position, prevPosition, nextPosition) {
+  //   return (
+  //     (position > prevPosition && position < nextPosition) ||
+  //     (prevPosition >= nextPosition &&
+  //       (position > prevPosition || position < nextPosition))
+  //   );
+  // }
 
-    while (!this.isBetween(player, currentPlayer, currentPlayer.nextPlayer)) {
-      currentPlayer = currentPlayer.nextPlayer;
-    }
+  // insertPlayerToCircularLinkedList(playerNode, position) {
+  //   if (this.#playersCircularList.size == 0) {
+  //     this.#playersCircularList.root = playerNode;
+  //     playerNode.next = playerNode;
+  //     playerNode.prev = playerNode;
+  //     this.#playersCircularList.size++;
+  //     return;
+  //   }
 
-    player.prevPlayer = currentPlayer;
-    player.nextPlayer = currentPlayer.nextPlayer;
-    currentPlayer.nextPlayer.prevPlayer = player;
-    currentPlayer.nextPlayer = player;
-  }
+  //   if (this.#playersCircularList.size == 1) {
+  //     playerNode.prev = this.#playersCircularList.root;
+  //     playerNode.next = this.#playersCircularList.root;
+  //     this.#playersCircularList.root.next = playerNode;
+  //     this.#playersCircularList.root.prev = playerNode;
+  //     this.#playersCircularList.size++;
+  //     return;
+  //   }
+
+  //   let node = this.#playersCircularList.root;
+
+  //   while (!this.isBetween(position, node.position, node.next.position)) {
+  //     node = node.next;
+  //   }
+
+  //   playerNode.next = node.next;
+  //   playerNode.prev = node;
+  //   node.next.prev = playerNode;
+  //   node.next = playerNode;
+  //   this.#playersCircularList.size++;
+  //   //debug
+  //   playerNode.printList();
+  // }
+
+  // removePlayerFromCircularLinkedList(playerNode) {
+  //   if (this.#playersCircularList.size == 1) {
+  //     this.#playersCircularList.root = null;
+  //     this.#playersCircularList.size = 0;
+  //     return;
+  //   }
+
+  //   playerNode.prev.next = playerNode.next;
+  //   playerNode.next.prev = playerNode.prev;
+  //   this.#playersCircularList.size--;
+  // }
 
   joinRoom(socketID) {
     this.inRoom.push(socketID);
   }
 
-  removePlayer(socketId, position) {
-    const player = this.players.get(position);
-
-    if (position == -1) {
-      this.#inRoom.splice(this.#inRoom.indexOf(socketId), 1);
-      return;
-    }
-
-    if (this.#players.size == 1) {
-      this.#players.delete(position);
-      return;
-    }
-    player.prevPlayer.nextPlayer = player.nextPlayer;
-    player.nextPlayer.prevPlayer = player.prevPlayer;
-    this.#players.delete(position);
+  removePlayer(playerNode) {
+    this.#playersList.remove(playerNode);
   }
 
-  get players() {
-    return this.#players;
+  tableState() {
+    let playerNode = this.#playersList.getRoot();
+    let playersState = [];
+    for (let i = 0; i < this.#playersList.getSize(); i++) {
+      console.log(playerNode);
+      playersState.push({
+        position: playerNode.position,
+        data: playerNode.player.toPlayerState(),
+      });
+      playerNode = playerNode.next;
+    }
+    return playersState;
   }
 
   get tableId() {
@@ -117,10 +170,6 @@ export default class Table {
 
   set round(round) {
     this.#round = round;
-  }
-
-  set players(players) {
-    this.#players = players;
   }
 
   set dealer(dealer) {

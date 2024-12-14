@@ -84,7 +84,7 @@ const Table9 = () => {
     const newPlayers = [...tableState.players];
     console.log(data);
     data.players.forEach((player) => {
-      newPlayers[player.position] = player;
+      newPlayers[player.position] = player.data;
     });
 
     setTableState({
@@ -179,7 +179,7 @@ const Table9 = () => {
     if(!players) return;
     let cards = []; 
     players.map((player) => {
-      if(player != null && player.isParticipant == true){
+      if(player != null && player.data.isParticipant == true){
         cards.push({position: cardsPositions[2*player.position], card: BackCardImage});
         cards.push({position: cardsPositions[2*player.position+1], card: BackCardImage});
       }

@@ -1,28 +1,35 @@
 export default class Round {
   /**@Type {Array<Player>} */
   #inGame;
-  constructor(dealer, players, tableId) {
-    this.dealer = dealer;
+  /**@Type {Dealer} */
+  #dealer;
+  /**@Type {Function} */
+  #onFinish;
+
+  constructor(dealer, players, tableId, onFinish, bigBlind, smallBlind) {
+    this.#dealer = dealer;
     this.tableId = tableId;
-    this.#inGame = [];
-    players.forEach((player) => {
-      this.#inGame.push(player);
-    });
+    this.#inGame = players;
+    this.onFinish = onFinish;
   }
   start() {
-    console.log("in round.start(), players:", this.#inGame.length);
+    console.log("in round.start(), players:", this.#inGame.size);
     this.setAllPlayersParticipants();
     console.log(this.#inGame);
-    this.dealer.dealPlayers(this.#inGame);
+    this.#dealer.dealPlayers(this.#inGame);
 
     // wait for players response..
-    this.dealer.dealFlop();
-    this.dealer.dealTurn();
-    this.dealer.dealRiver();
+    this.#dealer.dealFlop();
+    this.#dealer.dealTurn();
+    this.#dealer.dealRiver();
   }
 
   setAllPlayersParticipants() {
-    for (const player of this.#inGame.values()) player.isParticipant = true;
+    let playerNode = this.#inGame.root;
+    for (let i = 0; i < this.#inGame.size; i++) {
+      playerNode.player.isParticipant = true;
+      playerNode = playerNode.next;
+    }
   }
 
   get inGame() {

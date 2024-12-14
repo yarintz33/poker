@@ -7,7 +7,6 @@ export default class Player {
   #budget;
   #name;
   #avatar;
-  #position;
   #nextPlayer;
   #prevPlayer;
 
@@ -60,14 +59,6 @@ export default class Player {
     return this.#avatar;
   }
 
-  set position(position) {
-    this.#position = position;
-  }
-
-  get position() {
-    return this.#position;
-  }
-
   set budget(budget) {
     this.#budget = budget;
   }
@@ -114,11 +105,10 @@ export default class Player {
       name: this.#name,
       avatar: this.#avatar,
       isParticipant: this.#isParticipant,
-      position: this.#position,
       budget: this.#budget,
       action: this.#action,
-      nextPlayer: this.#nextPlayer?.position,
-      prevPlayer: this.#prevPlayer?.position,
+      //     nextPlayer: this.#nextPlayer?.name,
+      //     prevPlayer: this.#prevPlayer?.name,
     };
   }
 }

@@ -9,19 +9,24 @@ export default class Dealer {
 
   dealPlayers(players) {
     this.deck.resetDeck();
-    players.forEach((player) => {
-      player.cards = this.deck.get2cards();
-    });
+    let playerNode = players.root;
+    for (let i = 0; i < players.size; i++) {
+      playerNode.player.cards = this.deck.get2cards();
+      playerNode = playerNode.next;
+    }
+
     this.sendCardsToPlayers(players);
   }
 
   sendCardsToPlayers(players) {
     const io = getIO();
-    for (const player of players.values()) {
-      const socket = io.sockets.sockets.get(player.socketId);
+    let playerNode = players.root;
+    for (let i = 0; i < players.size; i++) {
+      const socket = io.sockets.sockets.get(playerNode.player.socketId);
       socket.emit("dealtCards", {
-        cards: player.cards,
+        cards: playerNode.player.cards,
       });
+      playerNode = playerNode.next;
     }
   }
   dealFlop() {}
