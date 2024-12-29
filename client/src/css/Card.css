@@ -1,15 +1,16 @@
 .Card {
-    width: 30px;
-    height: 40px;
+    width: 6%;
+    height: 15%;
     display: flex; /* Ensure the button is a flex container */
     transition: all 0.5s ease-out;
-    position: absolute; /* Absolute positioning for more control */
+    position: absolute;
+    transform: translate(-50%, -50%);
+    /* Absolute positioning for more control */
   }
 
   .card-initial {
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
   }
 
   .card-dealt {
@@ -46,98 +47,105 @@
   }
 
   .Card.bottom{
-    bottom: 19%;
+    bottom: calc(var(--bottom-value) - 4%);
   }
   
   .Card.left{
-    left: 28%;
+    left: var(--left-value);
   }
 
   
   .Card.left.second{
-    left: 29%;
+    left: calc(var(--left-value) + 1.5%);
   }
   
   .Card.right{
-    left: 68%;
+    left: var(--right-value);
   }
 
   .Card.right.second{
-    left: 69%;
+    left: calc(var(--right-value) + 1.5%);
   }
 
   .Card.top {
-    top: 19%; /* Position above the table */
+    top: calc(var(--top-value) + 2%); /* Position above the table */
   }
 
 .Card.center.second {
-  left: 49%;
+  left: calc(var(--center-value) + 1.5%);
 }
 
 .Card.center {
-  left: 48%;
+  left: var(--center-value);
 }
-
-
-
   
   .Card.down{
-    bottom: 30%;
+    bottom: calc(var(--down-value) - 4.5%);
   }
   
   .Card.down.left{
-    left: 14%;
-  } 
-  
-  .Card.down.left.second{
-    bottom: 30%;
-    left: 15%;
+    left: var(--left-value);
   } 
 
+
   .Card.up{
-    bottom: 60%;
+    bottom: calc(var(--up-value) - 5.5%);
   }
 
   .Card.up.left{
-    left: 14%;
-  } 
-
-  .Card.up.left.second{
-    left: 15%;
+    left: var(--left-value);
   } 
 
   .Card.down.right{
-    bottom: 30%;
-    left: 80%;
+    bottom: var(--down-value);
+    left: var(--right-value);
   } 
 
-  .Card.down.right.second{
-    bottom: 30%;
-    left: 81%;
-  }
   
   .Card.up.right{
-    left: 80%;
+    left: var(--right-value);
   }
 
   .Card.right-edge{
-    left: 80%;
+    left: var(--right-edge-value);
   }
 
   .Card.right-edge.second{
-    left: 81%;
+    left: calc(var(--right-edge-value) + 1.5%);
   }
 
   .Card.left-edge{
-    left: 14%;
+    left: calc(var(--left-edge-value) + 1%);
   }
 
   .Card.left-edge.second{
-    left: 15%;
+    left: calc(var(--left-edge-value) + 2.5%);
   }
 
-  .Card.up.right.second{
-    left: 81%;
+  .Card.board{
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .Card.first{
+    left: 39.35%;
+    
+  }
+  
+  .Card.second{
+    left: 44.7%;
+  }
+  
+  .Card.third{
+    left: 50%;
+  }
+
+  .Card.fourth{
+    left: 55.3%;
+  }
+
+  .Card.fifth{
+    left: 60.6%;
   }
 
  

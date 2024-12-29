@@ -1,17 +1,18 @@
+
+
+
 .table-centerer {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 2%;
+    margin-top: 4%;
     margin-bottom: 6%;
-    
     background-color: rgba(88, 4, 4);
   }
   
   .table-container {
     position: relative;
-    width: 800px;
-    height: 430px;
+    width: 75%;
   }
 
   .table {

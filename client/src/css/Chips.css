@@ -1,0 +1,51 @@
+.Chips {
+  width: 5%;
+  height: 5%;
+  display: flex; /* Ensure the button is a flex container */
+  transition: all 0.5s ease-out;
+  background-color: transparent;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  
+  position: absolute; /* Absolute positioning for more control */
+}
+
+.Chips.bottom{
+  bottom: calc(var(--bottom-value) + 18%);
+}
+
+.Chips.left{
+  left: var(--left-value);
+}
+
+.Chips.right{
+  left: var(--right-value);
+}
+
+.Chips.top {
+  top: calc(var(--top-value) + 13.5%); /* Position above the table */
+}
+
+.Chips.center {
+left: var(--center-value);
+}
+.Chips.down{
+  bottom: calc(var(--down-value) + 8%);
+}
+
+
+.Chips.up{
+  bottom: calc(var(--up-value) - 1.5%);
+}
+
+.Chips.right-edge{
+  left: calc(var(--right-edge-value) - 8%);
+}
+
+.Chips.left-edge{
+  left: calc(var(--left-edge-value) + 9%);
+}
+
+
+
+

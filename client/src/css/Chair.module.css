@@ -24,8 +24,7 @@
   }
   
   .avatar {
-    width: 70px; /* Avatar size */
-    height: 68px;
+    width: 100%; /* Avatar size */
     border-radius: 50%;
     /* background-color:purple; */
   }

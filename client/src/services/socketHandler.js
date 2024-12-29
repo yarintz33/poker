@@ -31,7 +31,6 @@ export const standUp = (tableId, playerId, chairIndex) => {
   //   console.warn("Socket not connected, attempting to connect...");
   //   socket.connect();
   // }
-  console.log("standUp is performing!");
   socket.emit("standUp", tableId, playerId, chairIndex);
 };
 

@@ -1,6 +1,6 @@
 .chair {
-    width: 70px;
-    height: 70px;
+    width: 8.8%;
+    height: 15.5%;
     background-color: #333;
     display: flex; /* Ensure the button is a flex container */
   
@@ -8,23 +8,24 @@
     align-items: center;
     cursor: pointer;
     border-radius: 50%;
-    position: absolute; /* Absolute positioning for more control */
+    position: absolute;
+    transform: translate(-50%, -50%);
+    /* Absolute positioning for more control */
   }
   
   .chair.top {
-    top: -6%; 
-    transform: translateX(-50%);
+    top: 0%; 
   }
   .chair.bottom {
-    bottom: -6%; 
-    transform: translateX(-50%);
+    /* bottom: -15%; */
+    bottom: calc(var(--bottom-value) - 28%); 
   }
 
   .chair.right {
-    left: 70%; /* Center horizontally */
+    left: var(--right-value); /* Center horizontally */
   }
   .chair.left {
-    left: 30%; /* Center horizontally */
+    left: var(--left-value); /* Center horizontally */
   }
 
   .chair.center {
@@ -32,14 +33,12 @@
   }
 
   .chair.up {
-    top: 20%; 
-    transform: translateX(-50%);
+    top: 30%; 
     /* Position above the table */
   }
 
   .chair.down {
-    bottom: 20%; /* Position below the table */
-    transform: translateX(-50%);
+    bottom:16%; /* Position below the table */
   }
   
   .chair.left-edge {
@@ -47,7 +46,7 @@
   }
 
   .chair.right-edge {
-    right: -4.5%; /* Position above the table */
+    right: -4.8%; /* Position above the table */
   }
 
 
