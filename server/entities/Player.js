@@ -106,7 +106,6 @@ export default class Player {
       avatar: this.#avatar,
       isParticipant: this.#isParticipant,
       budget: this.#budget,
-      action: this.#action,
       //     nextPlayer: this.#nextPlayer?.name,
       //     prevPlayer: this.#prevPlayer?.name,
     };

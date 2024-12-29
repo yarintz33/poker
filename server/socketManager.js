@@ -2,7 +2,6 @@ import { Server } from "socket.io";
 import Table from "./entities/Table.js";
 import Player from "./entities/Player.js";
 import { initIO } from "./services/ioService.js";
-import PlayerNode from "./entities/PlayerNode.js";
 
 /** @type {Map<String,Table>} */
 const tables = new Map();
@@ -23,8 +22,6 @@ function initializeSocket(server) {
   initIO(io); // Initialize the IO service
 
   io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
-
     socket.on("joinTable", (tableId, playerID, name, avatar) => {
       console.log(`Player ${playerID} joined table ${tableId}`);
       let table = tables.get(tableId);
@@ -38,29 +35,47 @@ function initializeSocket(server) {
 
       socket.join(tableId);
 
+      const tableState = table.tableState();
       socket.emit("tableState", {
-        players: table.tableState(),
+        players: tableState.playersState,
+        bigBlind: tableState.bigBlind,
+        smallBlind: tableState.smallBlind,
+        bets: tableState.bets,
       });
 
       // Send message to ALL sockets in this table's room (except sender)
+    });
+
+    socket.on("bet", (amount) => {
+      const connectedClient = connectedClients.get(socket.id);
+      const { tableId } = connectedClient;
+      let table = tables.get(tableId);
+      const position = table.bet(socket.id, amount.amount);
+      socket.to(tableId).emit("bet", {
+        position: position,
+        amount: amount.amount,
+      });
     });
 
     socket.on("seatInTable", (chairIndex, budget) => {
       // should add chair isn't occupied check..
       const connectedClient = connectedClients.get(socket.id);
       const { player, tableId } = connectedClient;
-      player.budget = budget;
-      const playerNode = new PlayerNode(player, chairIndex);
-      connectedClient.playerNode = playerNode;
+      //player.budget = budget;
+      //const playerNode = new PlayerNode(player, chairIndex);
+      //connectedClient.playerNode = playerNode;
       //delete connectedClient.player;
       console.log(
         `Player ${player.socketId} seated in table ${tableId} in chair number ${chairIndex} with budget ${budget} and name ${player.name} and avatar ${player.avatar}`
       );
       let table = tables.get(tableId);
-      table.addPlayer(playerNode, chairIndex);
 
+      table.addPlayer(player, socket.id, chairIndex, budget);
       socket.to(tableId).emit("playerJoined", {
-        player: player,
+        player: {
+          ...player.toPlayerState(),
+          budget: budget,
+        },
         position: chairIndex,
         message: "New player joined the table!",
       });
@@ -69,27 +84,56 @@ function initializeSocket(server) {
     });
 
     socket.on("standUp", () => {
-      const { tableId, playerNode } = connectedClients.get(socket.id);
+      const { tableId } = connectedClients.get(socket.id);
       console.log(`Player ${socket.id} left the chair`);
       let table = tables.get(tableId);
-      table.removePlayer(playerNode);
+      const position = table.removePlayer(socket.id);
       socket.to(tableId).emit("playerLeft", {
-        position: playerNode.position,
+        position: position,
         message: "Player left the table!",
       });
     });
+
+    socket.on("playerAction", (actionData) => {
+      const { tableId } = connectedClients.get(socket.id);
+      let table = tables.get(tableId);
+      const { position, nextPosition } = table.playerAction(
+        socket.id,
+        actionData
+      );
+      socket.to(tableId).emit("playerAction", {
+        position: position,
+        nextPlayer: nextPosition,
+        playerAction: actionData,
+      });
+
+      if (nextPosition == -1) {
+        socket.emit("youWasLast", {});
+      }
+    });
+
+    // socket.on("bet", (amount) => {
+    //   const { tableId } = connectedClients.get(socket.id);
+    //   let table = tables.get(tableId);
+    //   const { position, nextPosition } = table.bet(socket.id, amount.amount);
+    //   socket.to(tableId).emit("bet", {
+    //     position: position,
+    //     nextPosition: nextPosition,
+    //     amount: amount.amount,
+    //   });
+    // });
 
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.id);
       const clientInfo = connectedClients.get(socket.id);
       if (clientInfo) {
-        if (clientInfo.playerNode) {
-          const { tableId, playerNode } = clientInfo;
+        if (clientInfo.player) {
+          const { tableId, player } = clientInfo;
           const table = tables.get(tableId);
           if (table) {
-            table.removePlayer(playerNode);
+            const position = table.removePlayer(socket.id);
             socket.to(tableId).emit("playerLeft", {
-              position: playerNode.position,
+              position: position,
               message: "Player left the table!",
             });
           }

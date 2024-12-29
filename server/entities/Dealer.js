@@ -1,5 +1,5 @@
 import Deck from "./Deck.js";
-import { getIO } from "../services/ioService.js";
+import Round from "./Round.js";
 
 export default class Dealer {
   constructor(tableId) {
@@ -7,31 +7,38 @@ export default class Dealer {
     this.deck = new Deck();
   }
 
-  dealPlayers(players) {
+  dealNext(roundState) {
+    if (roundState == Round.ROUND_STATE.FLOP) {
+      return this.dealFlop();
+    } else if (roundState == Round.ROUND_STATE.TURN) {
+      return this.dealTurn();
+    } else if (roundState == Round.ROUND_STATE.RIVER) {
+      return this.dealRiver();
+    }
+  }
+
+  dealPlayers(/** @type {PlayersList} */ playersList) {
     this.deck.resetDeck();
-    let playerNode = players.root;
-    for (let i = 0; i < players.size; i++) {
-      playerNode.player.cards = this.deck.get2cards();
-      playerNode = playerNode.next;
+    const cardPairs = [];
+    for (let i = 0; i < playersList.size; i++) {
+      cardPairs.push(this.deck.get2cards());
     }
-
-    this.sendCardsToPlayers(players);
+    playersList.setPlayersCards(cardPairs);
+    //playersList.sendCardsToPlayers();
   }
 
-  sendCardsToPlayers(players) {
-    const io = getIO();
-    let playerNode = players.root;
-    for (let i = 0; i < players.size; i++) {
-      const socket = io.sockets.sockets.get(playerNode.player.socketId);
-      socket.emit("dealtCards", {
-        cards: playerNode.player.cards,
-      });
-      playerNode = playerNode.next;
-    }
+  dealFlop() {
+    const flopCards = this.deck.get3cards();
+    return flopCards;
   }
-  dealFlop() {}
 
-  dealTurn() {}
+  dealTurn() {
+    const turnCard = this.deck.getCard();
+    return turnCard;
+  }
 
-  dealRiver() {}
+  dealRiver() {
+    const riverCard = this.deck.getCard();
+    return riverCard;
+  }
 }

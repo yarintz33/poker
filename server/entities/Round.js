@@ -1,27 +1,44 @@
+import * as PokerEvaluator from "poker-evaluator";
+import { getIO } from "../services/ioService.js";
+
 export default class Round {
-  /**@Type {Array<Player>} */
+  /**@Type {PlayersList} */
   #inGame;
   /**@Type {Dealer} */
   #dealer;
   /**@Type {Function} */
   #onFinish;
+  /**@Type {PlayersList} */
+  #players;
+  /**@Type {Number} */
+  #pot;
+  /**@Type {Number} */
+  #roundState;
+  #boardsCards;
 
-  constructor(dealer, players, tableId, onFinish, bigBlind, smallBlind) {
+  static ROUND_STATE = Object.freeze({
+    PRE_FLOP: 0,
+    FLOP: 1,
+    TURN: 2,
+    RIVER: 3,
+    END: 4,
+  });
+
+  constructor(dealer, inGame, tableId, onFinish, bigBlind, smallBlind) {
     this.#dealer = dealer;
     this.tableId = tableId;
-    this.#inGame = players;
+    this.#inGame = inGame;
+    this.#inGame.printList();
+    this.#inGame.notifyTurnOver = this.startNextTurn.bind(this); // bind this so it can access this and so private fields
     this.onFinish = onFinish;
+    this.#roundState = Round.ROUND_STATE.PRE_FLOP;
+    this.#boardsCards = [];
+    this.#pot = 0;
   }
-  start() {
-    console.log("in round.start(), players:", this.#inGame.size);
-    this.setAllPlayersParticipants();
-    console.log(this.#inGame);
-    this.#dealer.dealPlayers(this.#inGame);
 
-    // wait for players response..
-    this.#dealer.dealFlop();
-    this.#dealer.dealTurn();
-    this.#dealer.dealRiver();
+  start() {
+    this.setAllPlayersParticipants();
+    this.#dealer.dealPlayers(this.#inGame);
   }
 
   setAllPlayersParticipants() {
@@ -34,5 +51,39 @@ export default class Round {
 
   get inGame() {
     return this.#inGame;
+  }
+
+  playerAction(socketId, actionData) {
+    const data = this.#inGame.playerAction(socketId, actionData);
+    return data;
+  }
+
+  turnOver() {
+    const turnPot = this.#inGame.turnOver();
+    this.#pot += turnPot;
+    this.#roundState++;
+    this.#inGame.resetTurnState();
+    const cards = this.#dealer.dealNext(this.#roundState);
+  }
+
+  startNextTurn(turnPot) {
+    this.#pot += turnPot;
+    if (this.#roundState == Round.ROUND_STATE.RIVER) {
+      this.#roundState = Round.ROUND_STATE.END;
+      this.#inGame.determineWinner(this.#boardsCards);
+      this.onFinish();
+    } else {
+      this.#roundState++;
+      this.#inGame.resetTurnState();
+      const cards = this.#dealer.dealNext(this.#roundState);
+      this.#boardsCards = this.#boardsCards.concat(cards);
+      const io = getIO();
+      io.to(this.tableId).emit("dealNext", {
+        pot: this.#pot,
+        speaker: this.#inGame.getSpeakerPosition(),
+        roundState: this.#roundState,
+        cards: cards,
+      });
+    }
   }
 }
