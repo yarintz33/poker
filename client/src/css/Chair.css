@@ -29,7 +29,7 @@
   }
 
   .chair.center {
-    left: 50%; /* Center horizontally */
+    left: var(--center-value); /* Center horizontally */
   }
 
   .chair.up {
@@ -42,12 +42,14 @@
   }
   
   .chair.left-edge {
-    left: 4% /* Position above the table */
+    left: calc(var(--left-edge-value) - 12.8%); /* Position above the table */
   }
 
+
   .chair.right-edge {
-    right: -4.8%; /* Position above the table */
+    left: calc(var(--right-edge-value) + 13%); /* Position above the table */
   }
+
 
 
   .empty {

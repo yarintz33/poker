@@ -16,7 +16,7 @@
   }
 
   .table {
-    width: 100%; /* Ensures the image resizes based on its container */
+    width: 90%; /* Ensures the image resizes based on its container */
     height: 100%;    
     /* mix-blend-mode: multiply; */
   }

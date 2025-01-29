@@ -1,14 +1,14 @@
 :root {
     /* Layout */
 
-    --center-value: 50%;
-    --left-value: 32.8%;
-    --right-value: 67.2%;
+    --center-value: 45%;
+    --left-value: 27.8%;
+    --right-value: 62.2%;
     --top-value: 23%;
     --bottom-value: 13.9%;
     --down-value: 29%;
     --up-value: 52%;
     --left-edge-value: 15%;
-    --right-edge-value: 84%;
+    --right-edge-value: 74.8%;
 
   } 

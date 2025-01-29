@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Chair from "./Chair";
 import "../css/Table.css";
-import Card from "./Card";
+import "../css/Card.css";
 import "../css/Chips.css";
 import "../css/Bet.css";
 import BetAmount from "./BetAmount";
@@ -25,12 +25,10 @@ const Table9 = () => {
   let player = {name:"yarin", budget: 500, avatar: "avatar" };
   const dealer = {name:"dealer", budget: undefined, avatar: "avatar" , position: 9};
   const [betAmount, setBetAmount] = useState(100);
-  //const [playersBets, setPlayersBets] = useState([]);
   const [sittingPosition, setSittingPosition] = useState(null);
   const [maxTurnBet, setMaxTurnBet] = useState(0);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [chipLeaderBudget, setChipLeaderBudget] = useState(1000);
-  // const [myCards, setMyCards] = useState([]);
 
   const [players, setPlayers] = useState([null, null, null, null, null, null, null, null, null, dealer]);
   const [cards, setCards] = useState([]);
@@ -38,13 +36,8 @@ const Table9 = () => {
   const [bets, setBets] = useState(Array(9).fill(0));
   const [pot, setPot] = useState(0);
 
-  const [tableState, setTableState] = useState({
-    players: [null, null , null, null, null, null, null, null, null, dealer],
-    bets: [],
-    cards: [],
-    boardCards: [],
-    numOfPlayers: 0
-  });
+  const boardPositions = ["board first", "board second", "board third", "board fourth", "board fifth"];
+
   const chairPositions = [
     "top right",
     "up right-edge",
@@ -105,7 +98,18 @@ const Table9 = () => {
       };
     }, []);
   
+
+  const setBoard = (cards) => {
+    if(!cards) return;
+    let newBoardCards = [];
+    for(let i = 0; i < cards.length; i++){
+      newBoardCards.push({"position" :boardPositions[i], "card" : cards[i]});
+    }
+    setBoardCards(newBoardCards);
+  }
+
   useSocketListener("tableState", (data) => {
+    console.log(data);
     const newPlayers = [...players];
     const newBets = [...bets];
     console.log(data);
@@ -117,28 +121,9 @@ const Table9 = () => {
     setPlayers(newPlayers);
     setBets(newBets);
     setCardsToPlayer(data.players);
+    setBoard(data.boardCards);
+    setPot(data.pot);
   });
-
-  // useSocketListener("bet", (data) => {
-  //   const newBets = [...tableState.bets];
-  //   newBets[data.position] = data.amount;
-  //   setTableState({
-  //     ...tableState,
-  //     bets: newBets
-  //   });
-  //   setMaxTurnBet(data.amount);
-  //   console.log(data);
-  // })
-
-  // useSocketListener("call", (data) => {
-  //   const newBets = [...tableState.bets];
-  //   newBets[data.position] = data.amount;
-  //   setTableState({
-  //     ...tableState,
-  //     bets: newBets
-  //   });
-  //   console.log(data);
-  // })
 
   useSocketListener("cardsDealt", (data) => {
     setBoardCards([]);
@@ -165,12 +150,12 @@ const Table9 = () => {
   const updatePlayerBudget = (position, amount) =>{
     setPlayers(prev => {
       const newPlayers = [...prev];
-      newPlayers[position].budget = newPlayers[position].budget - amount;
+      newPlayers[position].budget = amount;
       return newPlayers;
     });
   }
 
-  const findAndSetChipLeaderBudget = () =>{
+  const findAndSetChipLeaderBudget = () =>{ 
     let maxBudget = 0;
     players.forEach((player, index) => {
       if(player != null && index != sittingPosition && player.budget > maxBudget){
@@ -183,18 +168,32 @@ const Table9 = () => {
   useSocketListener("playerAction", (data) => {
     console.log(data);
     
-    if(data.playerAction.action == "bet"){
+    console.log(data.bet);
+
+    if(data.playerAction == "bet"){
       const newBets = [...bets];
-      newBets[data.position] = data.playerAction.amount;
-      updatePlayerBudget(data.position, data.playerAction.amount);
+      newBets[data.position] = data.bet;
+      updatePlayerBudget(data.position, players[data.position].budget - data.bet);
       setBets(newBets);
-      setMaxTurnBet(data.playerAction.amount);
-    }else if(data.playerAction.action == "call"){
+      setMaxTurnBet(data.bet);
+    }else if(data.playerAction == "call"){
       console.log("call!");
       const newBets = [...bets];
       newBets[data.position] = maxTurnBet;
       setBets(newBets);
-      updatePlayerBudget(data.position, maxTurnBet);
+      updatePlayerBudget(data.position, players[data.position].budget - data.bet);
+    }else if(data.playerAction == "fold"){
+      console.log("fold!");
+
+      setCards(cards.filter(card => card.position !== 2 * data.position && card.position !== 2 * data.position + 1));
+
+      // setCards(prev => {
+      //   const newCards = [...prev];
+      //   newCards[2*data.position] = null;
+      //   newCards[2*data.position + 1] = null;
+      //   return newCards;
+      // });
+      
     }
     
     if(data.nextPlayer == -1){
@@ -208,36 +207,47 @@ const Table9 = () => {
   });
 
   const resetBets = () => {
-    const newBets = [];
+    const newBets = Array(9).fill(0);
     setBets(newBets);
     setMaxTurnBet(0);
   }
 
+  useSocketListener("determineWinners", (data) => {
+    console.log("winner position: " + data[0].position + " winning pot: " + data[0].chips);
+    resetBets();
+    setBoardCards([]);
+    setCards([]);
+    let timeout = 0;
+    data.forEach(winner => {
+
+      setTimeout(() => {
+        updatePlayerBudget(winner.position, players[winner.position].budget + winner.chips);
+        setPot(pot - winner.chips);
+      }, timeout);
+      timeout += 2500;
+    });
+  });
 
   useSocketListener("youWasLast", (data) => {
     resetBets();
   });
 
   const dealFlop = (cards) => {
-    const positionsMap = {
-      0: "board first",
-      1: "board second",
-      2: "board third"
-    }
+    
     for(let i = 0; i < 3; i++){
       setTimeout(() => {
         //        setTableState(prev => ({...prev, boardCards: [...prev.boardCards, {"position" :positionsMap[i], "card" : cards[i]}]}));
-        setBoardCards(prev => ([...prev, {"position" :positionsMap[i], "card" : cards[i]}]));
+        setBoardCards(prev => ([...prev, {"position" :boardPositions[i], "card" : cards[i]}]));
       }, 400 * (i + 1));
     }
   }
 
   const dealTurn = (card) => {
-    setBoardCards(prev => ([...prev, {"position" :"board fourth", "card" : card}]));
+    setBoardCards(prev => ([...prev, {"position" :boardPositions[3], "card" : card}]));
   }
 
   const dealRiver = (card) => {
-    setBoardCards(prev => ([...prev, {"position" :"board fifth", "card" : card}]));
+    setBoardCards(prev => ([...prev, {"position" :boardPositions[4], "card" : card}]));
   }
 
   useSocketListener("dealNext", (data) => {
@@ -306,7 +316,6 @@ const Table9 = () => {
   };
 
   const dealCards = (position, cards, timeout, timeoutInterval) => {
-      console.log(players[position]);
       let firstCardToDeal = null; 
       let secondCardToDeal = null;
       if(position === sittingPosition){
@@ -353,7 +362,7 @@ const Table9 = () => {
     if(!players) return;
     let cards = []; 
     players.map((player) => {
-      if(player != null && player.data.isParticipant == true){
+      if(player != null && player.isParticipant == true){
         cards.push({position: cardsPositions[2*player.position], card: BackCardImage});
         cards.push({position: cardsPositions[2*player.position+1], card: BackCardImage});
       }
@@ -375,20 +384,20 @@ const Table9 = () => {
     }
     const newBets = [...bets]; 
     newBets[sittingPosition] = amount;
-    updatePlayerBudget(sittingPosition, amount);
+    updatePlayerBudget(sittingPosition, players[sittingPosition].budget - amount);
     setBets(newBets);
   };
 
 
   const handleCheckOrCall = () => {
     playerAction({action: "call"});
+    updatePlayerBudget(sittingPosition, players[sittingPosition].budget - maxTurnBet + bets[sittingPosition]);
     setBets(prev => {
       const newBets = [...prev];
       newBets[sittingPosition] = maxTurnBet;
       return newBets;
     });
 
-    updatePlayerBudget(sittingPosition, maxTurnBet);
   };
 
   const handleFold = () => {
@@ -411,10 +420,10 @@ const Table9 = () => {
       });
     });
 
-    socket.on("dealNext", ({ pot, cards }) => {
-      setPot(pot);
-      setBoardCards(prev => [...prev, ...cards]);
-    });
+    // socket.on("dealNext", ({ pot, cards }) => {
+    //   setPot(pot);
+    //   setBoardCards(prev => [...prev, ...cards]);
+    // });
 
     socket.on("bet", ({ position, amount }) => {
       setBets(prev => {
@@ -480,11 +489,11 @@ const Table9 = () => {
         <img   src={ChipsImage} className={"Chips top center"} />
         </>
           }
-          {//console.log(tableState.cards) &&
+          {
           cards.map((card) => {
             
             
-          return (
+          return (card != null &&
             <>
             <CardTry
               key={cardsPositions[card.position]}
@@ -492,7 +501,7 @@ const Table9 = () => {
               card={card.card}
             />
             </>
-          );
+          )
         })}
 
         
