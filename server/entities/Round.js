@@ -14,7 +14,7 @@ export default class Round {
   #pot;
   /**@Type {Number} */
   #roundState;
-  #boardsCards;
+  #boardCards;
 
   static ROUND_STATE = Object.freeze({
     PRE_FLOP: 0,
@@ -28,23 +28,24 @@ export default class Round {
     this.#dealer = dealer;
     this.tableId = tableId;
     this.#inGame = inGame;
-    this.#inGame.printList();
     this.#inGame.notifyTurnOver = this.startNextTurn.bind(this); // bind this so it can access this and so private fields
+    this.#inGame.notifyRoundOver = this.roundOver.bind(this);
     this.onFinish = onFinish;
     this.#roundState = Round.ROUND_STATE.PRE_FLOP;
-    this.#boardsCards = [];
+    this.#boardCards = [];
     this.#pot = 0;
   }
 
   start() {
-    this.setAllPlayersParticipants();
+    this.#inGame.resetRoundState();
     this.#dealer.dealPlayers(this.#inGame);
   }
 
   setAllPlayersParticipants() {
     let playerNode = this.#inGame.root;
     for (let i = 0; i < this.#inGame.size; i++) {
-      playerNode.player.isParticipant = true;
+      //playerNode.player.isParticipant = true;
+      playerNode.isParticipant = true;
       playerNode = playerNode.next;
     }
   }
@@ -53,30 +54,58 @@ export default class Round {
     return this.#inGame;
   }
 
+  get pot() {
+    return this.#pot;
+  }
+
+  get roundState() {
+    return this.#roundState;
+  }
+
+  get boardCards() {
+    return this.#boardCards;
+  }
+
   playerAction(socketId, actionData) {
     const data = this.#inGame.playerAction(socketId, actionData);
+
     return data;
   }
 
-  turnOver() {
-    const turnPot = this.#inGame.turnOver();
-    this.#pot += turnPot;
-    this.#roundState++;
-    this.#inGame.resetTurnState();
-    const cards = this.#dealer.dealNext(this.#roundState);
+  // turnOver() {
+  //   const turnPot = this.#inGame.turnOver();
+  //   this.#pot += turnPot;
+  //   this.#roundState++;
+  //   this.#inGame.resetTurnState();
+  //   const cards = this.#dealer.dealNext(this.#roundState);
+  // }
+
+  returnTableState() {
+    return this.#inGame.returnTableState();
+  }
+
+  roundOver() {
+    this.#roundState = Round.ROUND_STATE.END;
+    const result = this.#inGame.determineWinner(this.#boardCards, this.#pot);
+    const io = getIO();
+    io.to(this.tableId).emit("determineWinners", result);
+    this.#pot = 0;
+    this.#boardCards = [];
+    this.onFinish(result);
   }
 
   startNextTurn(turnPot) {
     this.#pot += turnPot;
-    if (this.#roundState == Round.ROUND_STATE.RIVER) {
-      this.#roundState = Round.ROUND_STATE.END;
-      this.#inGame.determineWinner(this.#boardsCards);
-      this.onFinish();
+    if (
+      this.#roundState == Round.ROUND_STATE.RIVER ||
+      this.#inGame.numOfParticipants <= 1
+    ) {
+      this.roundOver();
     } else {
       this.#roundState++;
       this.#inGame.resetTurnState();
       const cards = this.#dealer.dealNext(this.#roundState);
-      this.#boardsCards = this.#boardsCards.concat(cards);
+      this.#boardCards = this.#boardCards.concat(cards);
       const io = getIO();
       io.to(this.tableId).emit("dealNext", {
         pot: this.#pot,

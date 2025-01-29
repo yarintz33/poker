@@ -24,10 +24,19 @@ export default class Table {
   constructor(numOfChairs, tableId) {
     this.#inRoom = [];
     this.#dealer = new Dealer(this.#tableId);
-    this.#round = null;
     this.#tableId = tableId;
     this.#numOfChairs = numOfChairs; //max players in this table
     this.#playersList = new PlayersList(tableId);
+    this.#round = new Round(
+      this.#dealer,
+      this.#playersList,
+      this.#tableId,
+      this.onFinish.bind(this)
+    );
+  }
+
+  startNextTurn(turnPot) {
+    this.#round.startNextTurn(turnPot);
   }
 
   playerAction(socketId, actionData) {
@@ -46,16 +55,25 @@ export default class Table {
     }
   }
 
+  resetParticipants() {
+    this.#playersList.resetRoundState();
+  }
+
   start() {
     this.#pot = 0;
     this.#playersList.resetRoundState();
-    this.#round = new Round(
+    this.#round = this.createRound();
+    this.#round.start();
+  }
+
+  createRound() {
+    const round = new Round(
       this.dealer,
-      this.#playersList.copy(),
+      this.#playersList,
       this.#tableId,
       this.onFinish.bind(this)
     );
-    this.#round.start();
+    return round;
   }
 
   addPlayer(player, socketID, position, budget) {
@@ -77,7 +95,18 @@ export default class Table {
   }
 
   tableState() {
-    return this.#playersList.returnTableState();
+    const roundState = this.#round.returnTableState();
+    let tableState = {
+      players: [...roundState.playersState],
+      bigBlind: roundState.bigBlind,
+      smallBlind: roundState.smallBlind,
+    };
+    return {
+      ...tableState,
+      boardCards: this.#round?.boardCards,
+      pot: this.#round?.pot,
+      // roundState: this.#round.roundState,
+    };
   }
 
   get tableId() {

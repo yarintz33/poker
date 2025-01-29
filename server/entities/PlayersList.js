@@ -7,6 +7,8 @@ export default class PlayersList {
   #size;
   #playersMap;
   #maxBet;
+  #numOfParticipants;
+  #notifyRoundOver;
   #bigBlindPosition;
   #doesBigBlindremoved;
   #smallBlindPosition;
@@ -14,16 +16,19 @@ export default class PlayersList {
   #UTGPosition;
   #tableId;
   #notifyTurnOver;
+  #lastBetPosition;
 
   constructor(tableId) {
     this.#tableId = tableId;
     this.#root = null;
     this.#size = 0;
+    this.#numOfParticipants = 0;
     /**@Type {Map<String, PlayerNode>} */
     this.#playersMap = new Map();
     this.#bigBlindPosition = -1;
     this.#smallBlindPosition = -1;
     this.#firstSpeakerPosition = -1;
+    this.#lastBetPosition = -1;
     this.#maxBet = 0;
   }
 
@@ -37,7 +42,8 @@ export default class PlayersList {
 
   resetTurnState() {
     this.#maxBet = 0;
-    this.resetPlayersState();
+    this.#lastBetPosition = this.#firstSpeakerPosition;
+    this.resetPlayersTurnState();
   }
 
   resetRoundState() {
@@ -46,72 +52,114 @@ export default class PlayersList {
       this.#bigBlindPosition = this.#root.position;
       this.#firstSpeakerPosition = this.#bigBlindPosition;
       this.#doesBigBlindremoved = false;
-      this.#UTGPosition = this.#root.next.position;
+      const utgPosition = this.#root.next.next.position;
+      this.#UTGPosition = utgPosition;
+      this.#lastBetPosition = utgPosition;
     } else {
       this.#bigBlindPosition = this.#root.next.position;
       this.#smallBlindPosition = this.#root.position;
       this.#firstSpeakerPosition = this.#smallBlindPosition;
-      this.#UTGPosition = this.#root.next.next.position;
+      const utgPosition = this.#root.next.next.position;
+      this.#UTGPosition = utgPosition;
+      this.#lastBetPosition = utgPosition;
       this.#root = this.#root.next;
+    }
+    this.#maxBet = 0;
+    this.#numOfParticipants = this.#size;
+
+    this.resetPlayersRoundState();
+  }
+
+  resetPlayersRoundState() {
+    let node = this.#root;
+    for (let i = 0; i < this.#size; i++) {
+      node.reset();
+      node = node.next;
     }
   }
 
-  resetPlayersState() {
+  resetPlayersTurnState() {
     let node = this.#root;
     for (let i = 0; i < this.#size; i++) {
       node.action = "none";
-      node.bet = -1;
+      node.bet = 0;
       node = node.next;
     }
   }
 
   //TODO: check if turn ended
   playerAction(socketId, actionData) {
-    let isTurnEnded = false;
+    console.log(actionData);
     let bet = 0;
+    let nextPlayerPosition = -1;
     const playerNode = this.#playersMap.get(socketId); // this what cause the problem. the playersMap points to the table players.
     playerNode.action = actionData.action;
 
+    let nextPlayerNode = playerNode.next;
+    while (
+      (nextPlayerNode.isParticipant == false || nextPlayerNode.isAllIn) &&
+      nextPlayerNode.position != this.#lastBetPosition
+    ) {
+      nextPlayerNode = nextPlayerNode.next;
+    }
+
     if (actionData.action == "bet") {
+      playerNode.action = "bet";
+      this.#lastBetPosition = playerNode.position;
       if (actionData.amount > this.#maxBet) {
         this.#maxBet = actionData.amount;
       }
+      if (actionData.amount == playerNode.budget) {
+        playerNode.isAllIn = true;
+      }
+
       playerNode.bet = actionData.amount;
       playerNode.budget -= actionData.amount;
       bet = actionData.amount;
-    }
-
-    // if (actionData.action == "check") {
-    //   playerNode.action = "check";
-    //   playerNode.bet = 0;
-    //   if (playerNode.next.action == "check") {
-    //     //move on to next turn // call nextTurn()
-    //     isTurnEnded = true;
-    //   }
-    // }
-
-    if (actionData.action == "call") {
+    } else if (actionData.action == "call") {
       playerNode.action = "call";
+      let callAmount = this.#maxBet - playerNode.bet;
+      if (callAmount > playerNode.budget) {
+        callAmount = playerNode.bet + playerNode.budget;
+        playerNode.isAllIn = true;
+      }
+      playerNode.budget -= callAmount;
       playerNode.bet = this.#maxBet;
-      bet = this.#maxBet;
-      playerNode.budget -= bet;
-    }
-
-    if (actionData.action == "fold") {
+      bet = callAmount;
+    } else if (actionData.action == "fold") {
       playerNode.action = "fold";
+      playerNode.isParticipant = false;
+      this.#numOfParticipants--;
+      // if (this.#numOfParticipants == 1) {
+      //   this.#notifyRoundOver();
+      // } else
+      if (playerNode.position == this.#firstSpeakerPosition) {
+        this.#firstSpeakerPosition = nextPlayerNode.position;
+      }
     }
 
-    if (playerNode.next.bet == this.#maxBet) {
-      isTurnEnded = true;
-      let turnPot = this.calcTurnPot();
-      this.#notifyTurnOver(turnPot);
+    playerNode.overallBet += bet;
+    nextPlayerPosition = nextPlayerNode.position;
+    let turnPot = 0;
+
+    if (nextPlayerNode.position == this.#lastBetPosition) {
+      console.log("lastBetPosition: " + this.#lastBetPosition);
+      nextPlayerPosition = -1;
+      turnPot = this.calcTurnPot();
+      //this.#notifyTurnOver(turnPot);
+      //this.#lastBetPosition = this.#firstSpeakerPosition;
     }
 
     return {
       position: playerNode.position,
-      nextPosition: isTurnEnded ? -1 : playerNode.next.position,
+      nextPosition: nextPlayerPosition,
       bet: bet,
+      turnPot: turnPot,
     };
+  }
+
+  set notifyRoundOver(notifyRoundOver) {
+    this.#notifyRoundOver = notifyRoundOver;
   }
 
   calcTurnPot() {
@@ -124,34 +172,113 @@ export default class PlayersList {
     return pot;
   }
 
+  #sortedArrayFromLinkedList(head) {
+    const sortedArray = [];
+
+    let current = head;
+    for (let i = 0; i < this.#size; i++) {
+      if (current.isParticipant && current.isAllIn) {
+        // Insert the node value into the sorted array
+        let inserted = false;
+        for (let i = 0; i < sortedArray.length; i++) {
+          if (sortedArray[i] > current.overallBet) {
+            sortedArray.splice(i, 0, current);
+            inserted = true;
+            break;
+          }
+        }
+        if (!inserted) {
+          sortedArray.push(current); // Add to the end if no smaller value is found
+        }
+      }
+
+      current = current.next; // Move to the next node
+    }
+    console.log("printList: ");
+    current.printList();
+
+    return sortedArray;
+  }
+
+  #findWinners(players, boardsCards) {
+    let winners = [];
+    let maxHandRank = -1;
+    let bestHand = null;
+    players.forEach((playerNode) => {
+      if (playerNode.isParticipant) {
+        console.log("find winners player: " + playerNode.position);
+        const playerCards = playerNode.cards.concat(boardsCards);
+        const handRank = PokerEvaluator.evalHand(playerCards).value;
+        if (handRank > maxHandRank) {
+          maxHandRank = handRank;
+          bestHand = playerCards;
+          winners = [playerNode];
+        } else if (handRank == maxHandRank) {
+          winners.push(playerNode);
+        }
+      } else {
+        console.log("player not participant: " + playerNode.position);
+      }
+    });
+    winners.forEach((winner) => {
+      console.log("winner!: " + winner.position);
+    });
+
+    return winners;
+  }
+
+  #updatePlayerBudget(socketId, amount) {
+    console.log("update winner budget with socketId: " + socketId);
+    const playerNode = this.#playersMap.get(socketId);
+    if (playerNode != undefined && playerNode != null) {
+      playerNode.budget = amount;
+    } else {
+      console.log("can't find winner from playersMap! ");
+      console.log(this.#playersMap);
+    }
+  }
+
   determineWinner(boardsCards, pot) {
     let node = this.#root;
-    let winners = [];
     let maxHandRank = 0;
     let bestHand = null;
-    for (let i = 0; i < this.#size; i++) {
-      const playerCards = node.player.cards.concat(boardsCards);
-      const handRank = PokerEvaluator.evalHand(playerCards).value;
-      if (handRank > maxHandRank) {
-        maxHandRank = handRank;
-        bestHand = playerCards;
-        winners = [node];
-      } else if (handRank == maxHandRank) {
-        winners.push(node);
-      }
-      node = node.next;
+    let copiedPlayers = this.#copyList();
+    copiedPlayers.forEach((player) => {
+      console.log("player: " + player.position + " " + player.overallBet);
+    });
+
+    const output = [];
+    console.log("pot: " + pot);
+    let winners = [];
+    while (pot > 0) {
+      winners = this.#findWinners(copiedPlayers, boardsCards); // can't find winners??
+      console.log("winners: ");
+      winners.forEach((winner) => {
+        console.log("winner: " + winner.position + " " + winner.overallBet);
+      });
+      let winnersAmount = winners.length;
+      let winnerChips = 0;
+      winners.forEach((winner) => {
+        copiedPlayers.forEach((player) => {
+          winnerChips +=
+            Math.min(winner.overallBet, player.overallBet) / winnersAmount;
+        });
+        output.push({
+          position: winner.position,
+          chips: winnerChips,
+        });
+        this.#updatePlayerBudget(
+          winner.player.socketId,
+          winner.budget + winnerChips
+        );
+      });
+      copiedPlayers = copiedPlayers.filter(
+        (player) => !winners.includes(player)
+      );
+      pot -= winnerChips;
     }
-
-    let potPerWinner = pot / winners.length;
-    winners.forEach((winner) => {
-      winner.budget += potPerWinner;
-    });
-
-    console.log("winners: ");
-    winners.forEach((winner) => {
-      console.log(winner.position);
-    });
-    console.log("best hand:" + bestHand);
+    console.log(output);
+    return output;
   }
 
   add(player, socketId, position, budget) {
@@ -190,8 +317,15 @@ export default class PlayersList {
   remove(socketId) {
     const nodeToRemove = this.#playersMap.get(socketId);
     if (!nodeToRemove) {
-      ("can't find player by his socket id!");
+      console.log("can't find player by his socket id!");
       return -1;
+    }
+
+    if (nodeToRemove.isParticipant) {
+      this.#numOfParticipants--;
+      if (this.#numOfParticipants == 1) {
+        this.#notifyRoundOver();
+      }
     }
 
     const position = nodeToRemove.position;
@@ -222,6 +356,7 @@ export default class PlayersList {
     nodeToRemove.next.prev = nodeToRemove.prev;
     this.#playersMap.delete(socketId);
     this.#size--;
+
     return position;
   }
 
@@ -245,6 +380,10 @@ export default class PlayersList {
     return this.#root;
   }
 
+  get numOfParticipants() {
+    return this.#numOfParticipants;
+  }
+
   getSpeakerPosition() {
     return this.#firstSpeakerPosition;
   }
@@ -252,7 +391,7 @@ export default class PlayersList {
   setPlayersCards(cardsPairs) {
     let node = this.#root;
     for (let i = 0; i < this.#size; i++) {
-      node.player.cards = cardsPairs[i];
+      node.cards = cardsPairs[i];
       node = node.next;
     }
     this.sendCardsToPlayers();
@@ -260,7 +399,7 @@ export default class PlayersList {
 
   emitCards(socket, playerNode) {
     socket.emit("cardsDealt", {
-      cards: playerNode?.player.cards,
+      cards: playerNode?.cards,
       bigBlindPosition: this.#bigBlindPosition,
       smallBlindPosition: this.#smallBlindPosition,
       UTGPosition: this.#UTGPosition,
@@ -301,6 +440,15 @@ export default class PlayersList {
     });
   }
 
+  // getPlayerState(playerNode) {
+  //   return {
+  //     position: playerNode.position,
+  //     data: playerNode.player.toPlayerState(),
+  //     bet: playerNode.bet == undefined ? 0 : playerNode.bet,
+  //     isParticipant: playerNode.isParticipant,
+  //   };
+  // }
+
   returnTableState() {
     let playersState = [];
     let playerNode = this.#root;
@@ -311,10 +459,12 @@ export default class PlayersList {
       }
       const player = playerNode.player.toPlayerState();
       player.budget = playerNode.budget;
+      player.isParticipant = playerNode.isParticipant;
       playersState.push({
         position: playerNode.position,
         data: player,
         bet: playerNode.bet == undefined ? 0 : playerNode.bet,
+        isParticipant: playerNode.isParticipant,
       });
       playerNode = playerNode.next;
     }
@@ -325,35 +475,46 @@ export default class PlayersList {
     };
   }
 
-  copy() {
-    let newList = new PlayersList(this.#tableId);
-    let root = this.#root;
-    const newRoot = root.clone();
-    newList.#root = newRoot;
-    let current = newRoot;
-    let newPlayersMap = new Map();
-    newPlayersMap.set(newRoot.player.socketId, newRoot);
-
-    for (let i = 0; i < this.#size - 1; i++) {
-      let nextNode = root.next.clone();
-      current.next = nextNode;
-      nextNode.prev = current;
-      current = nextNode;
-      root = root.next;
-      newPlayersMap.set(nextNode.player.socketId, nextNode);
+  #copyList() {
+    const copiedPlayers = [];
+    let current = this.#root;
+    for (let i = 0; i < this.#size; i++) {
+      copiedPlayers.push(current.copy());
+      current = current.next;
     }
-    current.next = newList.#root;
-    newList.#root.prev = current;
-    newList.#size = this.#size;
-    newList.#bigBlindPosition = this.#bigBlindPosition;
-    newList.#smallBlindPosition = this.#smallBlindPosition;
-    newList.#firstSpeakerPosition = this.#firstSpeakerPosition;
-    newList.#UTGPosition = this.#UTGPosition;
-    newList.#playersMap = newPlayersMap;
-    // current.printList();
-    //root is first speaker in pre-flop, bigBlind is last.
-    return newList;
+    copiedPlayers.forEach((participant) => {});
+    return copiedPlayers;
   }
+
+  // copy() {
+  //   let newList = new PlayersList(this.#tableId);
+  //   let root = this.#root;
+  //   const newRoot = root.clone();
+  //   newList.#root = newRoot;
+  //   let current = newRoot;
+  //   let newPlayersMap = new Map();
+  //   newPlayersMap.set(newRoot.player.socketId, newRoot);
+
+  //   for (let i = 0; i < this.#size - 1; i++) {
+  //     let nextNode = root.next.clone();
+  //     current.next = nextNode;
+  //     nextNode.prev = current;
+  //     current = nextNode;
+  //     root = root.next;
+  //     newPlayersMap.set(nextNode.player.socketId, nextNode);
+  //   }
+  //   current.next = newList.#root;
+  //   newList.#root.prev = current;
+  //   newList.#size = this.#size;
+  //   newList.#bigBlindPosition = this.#bigBlindPosition;
+  //   newList.#smallBlindPosition = this.#smallBlindPosition;
+  //   newList.#firstSpeakerPosition = this.#firstSpeakerPosition;
+  //   newList.#UTGPosition = this.#UTGPosition;
+  //   newList.#playersMap = newPlayersMap;
+  //   // current.printList();
+  //   //root is first speaker in pre-flop, bigBlind is last.
+  //   return newList;
+  // }
 
   printList() {
     let node = this.#root;

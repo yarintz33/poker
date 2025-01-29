@@ -7,19 +7,52 @@ export default class PlayerNode {
   #bet;
   #action;
   #budget;
+  #isParticipant;
+  #startingBudget;
+  #overallBet;
+  #cards;
+  #isAllIn;
 
   constructor(player, position, budget) {
     this.#player = player;
     this.#position = position;
     this.#budget = budget;
+    this.#startingBudget = budget;
     this.#prev = null;
     this.#next = null;
-    this.#bet = -1;
+    this.#bet = 0;
     this.#action = "none";
+    this.#isParticipant = false;
+    this.#isAllIn = false;
+    this.#overallBet = 0;
+  }
+
+  get isAllIn() {
+    return this.#isAllIn;
+  }
+
+  set isAllIn(isAllIn) {
+    this.#isAllIn = isAllIn;
+  }
+
+  get cards() {
+    return this.#cards;
+  }
+
+  set cards(cards) {
+    this.#cards = cards;
   }
 
   get player() {
     return this.#player;
+  }
+
+  get overallBet() {
+    return this.#overallBet;
+  }
+
+  set overallBet(overallBet) {
+    this.#overallBet = overallBet;
   }
 
   get budget() {
@@ -78,6 +111,14 @@ export default class PlayerNode {
     this.#next = node;
   }
 
+  set isParticipant(isParticipant) {
+    this.#isParticipant = isParticipant;
+  }
+
+  get isParticipant() {
+    return this.#isParticipant;
+  }
+
   printList() {
     let node = this;
     let prev = this.prev;
@@ -90,7 +131,24 @@ export default class PlayerNode {
     console.log(node.next.position + " ");
   }
 
+  reset() {
+    this.#bet = 0;
+    this.#action = "none";
+    this.#isAllIn = false;
+    this.#overallBet = 0;
+    this.#cards = [];
+    this.#isParticipant = true;
+  }
+
   clone() {
     return new PlayerNode(this.#player, this.#position, this.#budget);
+  }
+
+  copy() {
+    const copy = new PlayerNode(this.#player, this.#position, this.#budget);
+    copy.#overallBet = this.#overallBet;
+    copy.#cards = this.#cards;
+    copy.#isParticipant = this.#isParticipant;
+    return copy;
   }
 }

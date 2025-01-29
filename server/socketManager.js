@@ -36,12 +36,7 @@ function initializeSocket(server) {
       socket.join(tableId);
 
       const tableState = table.tableState();
-      socket.emit("tableState", {
-        players: tableState.playersState,
-        bigBlind: tableState.bigBlind,
-        smallBlind: tableState.smallBlind,
-        bets: tableState.bets,
-      });
+      socket.emit("tableState", tableState);
 
       // Send message to ALL sockets in this table's room (except sender)
     });
@@ -97,18 +92,20 @@ function initializeSocket(server) {
     socket.on("playerAction", (actionData) => {
       const { tableId } = connectedClients.get(socket.id);
       let table = tables.get(tableId);
-      const { position, nextPosition } = table.playerAction(
+      const { position, nextPosition, bet, turnPot } = table.playerAction(
         socket.id,
         actionData
       );
       socket.to(tableId).emit("playerAction", {
         position: position,
         nextPlayer: nextPosition,
-        playerAction: actionData,
+        playerAction: actionData.action,
+        bet: bet,
       });
 
       if (nextPosition == -1) {
         socket.emit("youWasLast", {});
+        table.startNextTurn(turnPot);
       }
     });
 
