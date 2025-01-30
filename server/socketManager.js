@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import Table from "./entities/Table.js";
 import Player from "./entities/Player.js";
 import { initIO } from "./services/ioService.js";
+import store from "./redux.js";
 
 /** @type {Map<String,Table>} */
 const tables = new Map();
@@ -9,6 +10,9 @@ tables.set("1", new Table(9, "1"));
 
 /** @type {Map<String, {player: Player, position: Number, tableId: String}>} */
 const connectedClients = new Map();
+
+// Map to track disconnected players
+const disconnectedPlayers = new Map();
 
 function initializeSocket(server) {
   const io = new Server(server, {
@@ -60,9 +64,6 @@ function initializeSocket(server) {
       //const playerNode = new PlayerNode(player, chairIndex);
       //connectedClient.playerNode = playerNode;
       //delete connectedClient.player;
-      console.log(
-        `Player ${player.socketId} seated in table ${tableId} in chair number ${chairIndex} with budget ${budget} and name ${player.name} and avatar ${player.avatar}`
-      );
       let table = tables.get(tableId);
 
       table.addPlayer(player, socket.id, chairIndex, budget);

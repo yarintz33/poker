@@ -29,10 +29,8 @@ async function refreshAuth(req, res, next) {
     });
 
     if (!user || new Date().getTime() / 1000 > req.user.exp) {
-      console.log("cant find user with token or token expired");
       return res.status(403).json({ message: "Invalid refresh token" });
     } else {
-      console.log("refresh token is valid");
     }
     next();
   } else {
@@ -60,7 +58,7 @@ function auth(tokenName, tokenKey, req, res) {
     req.user = decoded;
     return true;
   } catch (err) {
-    console.log("failed decode 403");
+    console.log("failed decode");
     return false;
   }
 }

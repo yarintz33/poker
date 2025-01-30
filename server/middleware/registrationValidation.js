@@ -5,7 +5,6 @@ import {
 } from "../services/validation.js";
 
 function registerValidation(req, res, next) {
-  console.log("registerValidation");
   const { firstName, lastName, email, plainPass } = req.body;
   if (
     validateEmail(email) &&

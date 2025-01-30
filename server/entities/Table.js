@@ -43,12 +43,6 @@ export default class Table {
     return this.#round.playerAction(socketId, actionData);
   }
 
-  // bet(socketId, amount) {
-  //   console.log("bet", socketId, amount);
-  //   this.#pot += amount;
-  //   return this.#playersList.bet(socketId, amount);
-  // }
-
   onFinish() {
     if (this.#playersList.getSize() >= 2) {
       this.start();

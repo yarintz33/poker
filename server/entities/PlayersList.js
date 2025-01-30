@@ -89,7 +89,6 @@ export default class PlayersList {
 
   //TODO: check if turn ended
   playerAction(socketId, actionData) {
-    console.log(actionData);
     let bet = 0;
     let nextPlayerPosition = -1;
     const playerNode = this.#playersMap.get(socketId); // this what cause the problem. the playersMap points to the table players.
@@ -172,41 +171,12 @@ export default class PlayersList {
     return pot;
   }
 
-  #sortedArrayFromLinkedList(head) {
-    const sortedArray = [];
-
-    let current = head;
-    for (let i = 0; i < this.#size; i++) {
-      if (current.isParticipant && current.isAllIn) {
-        // Insert the node value into the sorted array
-        let inserted = false;
-        for (let i = 0; i < sortedArray.length; i++) {
-          if (sortedArray[i] > current.overallBet) {
-            sortedArray.splice(i, 0, current);
-            inserted = true;
-            break;
-          }
-        }
-        if (!inserted) {
-          sortedArray.push(current); // Add to the end if no smaller value is found
-        }
-      }
-
-      current = current.next; // Move to the next node
-    }
-    console.log("printList: ");
-    current.printList();
-
-    return sortedArray;
-  }
-
   #findWinners(players, boardsCards) {
     let winners = [];
     let maxHandRank = -1;
     let bestHand = null;
     players.forEach((playerNode) => {
       if (playerNode.isParticipant) {
-        console.log("find winners player: " + playerNode.position);
         const playerCards = playerNode.cards.concat(boardsCards);
         const handRank = PokerEvaluator.evalHand(playerCards).value;
         if (handRank > maxHandRank) {
@@ -216,25 +186,21 @@ export default class PlayersList {
         } else if (handRank == maxHandRank) {
           winners.push(playerNode);
         }
-      } else {
-        console.log("player not participant: " + playerNode.position);
       }
     });
     winners.forEach((winner) => {
-      console.log("winner!: " + winner.position);
+      console.log("winner: " + winner.position);
     });
 
     return winners;
   }
 
   #updatePlayerBudget(socketId, amount) {
-    console.log("update winner budget with socketId: " + socketId);
     const playerNode = this.#playersMap.get(socketId);
     if (playerNode != undefined && playerNode != null) {
       playerNode.budget = amount;
     } else {
       console.log("can't find winner from playersMap! ");
-      console.log(this.#playersMap);
     }
   }
 
@@ -243,16 +209,11 @@ export default class PlayersList {
     let maxHandRank = 0;
     let bestHand = null;
     let copiedPlayers = this.#copyList();
-    copiedPlayers.forEach((player) => {
-      console.log("player: " + player.position + " " + player.overallBet);
-    });
 
     const output = [];
-    console.log("pot: " + pot);
     let winners = [];
     while (pot > 0) {
       winners = this.#findWinners(copiedPlayers, boardsCards); // can't find winners??
-      console.log("winners: ");
       winners.forEach((winner) => {
         console.log("winner: " + winner.position + " " + winner.overallBet);
       });
@@ -439,15 +400,6 @@ export default class PlayersList {
       }
     });
   }
-
-  // getPlayerState(playerNode) {
-  //   return {
-  //     position: playerNode.position,
-  //     data: playerNode.player.toPlayerState(),
-  //     bet: playerNode.bet == undefined ? 0 : playerNode.bet,
-  //     isParticipant: playerNode.isParticipant,
-  //   };
-  // }
 
   returnTableState() {
     let playersState = [];
