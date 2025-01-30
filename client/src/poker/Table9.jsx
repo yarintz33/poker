@@ -1,5 +1,5 @@
 // Table.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chair from "./Chair";
 import "../css/Table.css";
 import "../css/Card.css";
@@ -9,7 +9,6 @@ import BetAmount from "./BetAmount";
 import { useSocketListener } from "../services/socketHandler";
 import "../css/App.css";
 import { connectWebSocket, joinToTable } from "../services/socketHandler";
-import { useEffect } from "react";
 import { socket } from "../services/socketHandler";
 import TableImage from "../images/table6.png";
 import Avatar from "../images/boy.png";
@@ -19,6 +18,7 @@ import BackCardImage from "../images/back-card.png";
 import cardImages from "../services/CardImages";
 import ChipsImage from "../images/chips2.png";
 import CardTry from "./CardTry";
+import TurnTimer from "./TurnTimer";
 
 const Table9 = () => {
   const tableLength = 10;
@@ -29,6 +29,8 @@ const Table9 = () => {
   const [maxTurnBet, setMaxTurnBet] = useState(0);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [chipLeaderBudget, setChipLeaderBudget] = useState(1000);
+  const [turnTimer, setTurnTimer] = useState(null);
+  const TURN_TIME_LIMIT = 10000; // 10 seconds in milliseconds
 
   const [players, setPlayers] = useState([null, null, null, null, null, null, null, null, null, dealer]);
   const [cards, setCards] = useState([]);
@@ -89,7 +91,6 @@ const Table9 = () => {
       connectWebSocket();
       
       socket.on("connect", () => {
-        console.log("on connect is performing!");
         joinToTable(tableId, playerId, "playerName", "avt1");
       });
 
@@ -141,7 +142,6 @@ const Table9 = () => {
   });
 
   useSocketListener("playerJoined", (data) => {
-    console.log(data);
     const newPlayers = [...players];
     newPlayers[data.position] = data.player;
     setPlayers(newPlayers);
@@ -168,8 +168,6 @@ const Table9 = () => {
   useSocketListener("playerAction", (data) => {
     console.log(data);
     
-    console.log(data.bet);
-
     if(data.playerAction == "bet"){
       const newBets = [...bets];
       newBets[data.position] = data.bet;
@@ -177,14 +175,11 @@ const Table9 = () => {
       setBets(newBets);
       setMaxTurnBet(data.bet);
     }else if(data.playerAction == "call"){
-      console.log("call!");
       const newBets = [...bets];
       newBets[data.position] = maxTurnBet;
       setBets(newBets);
       updatePlayerBudget(data.position, players[data.position].budget - data.bet);
     }else if(data.playerAction == "fold"){
-      console.log("fold!");
-
       setCards(cards.filter(card => card.position !== 2 * data.position && card.position !== 2 * data.position + 1));
 
       // setCards(prev => {
@@ -198,11 +193,13 @@ const Table9 = () => {
     
     if(data.nextPlayer == -1){
       resetBets();
-      console.log("nextTurn!");
     }
 
-    if(data.nextPlayer == sittingPosition){
+    if (data.nextPlayer == sittingPosition) {
       setIsMyTurn(true);
+      startTurnTimer(); // Start timer for new turn
+    } else {
+      clearTurnTimer(); // Clear timer if it's not our turn
     }
   });
 
@@ -251,9 +248,6 @@ const Table9 = () => {
   }
 
   useSocketListener("dealNext", (data) => {
-    console.log("dealNext!");
-    console.log(data);
-
     setPot(data.pot);
     findAndSetChipLeaderBudget();
 
@@ -263,10 +257,8 @@ const Table9 = () => {
     if(data.roundState == ROUND_STATE.FLOP){
       dealFlop(data.cards);
     }else if(data.roundState == ROUND_STATE.TURN){
-      console.log("in deal turn!");
       dealTurn(data.cards);
     }else if(data.roundState == ROUND_STATE.RIVER){
-      console.log("in deal river!");
       dealRiver(data.cards);
     }
     
@@ -377,6 +369,7 @@ const Table9 = () => {
   };
 
   const handleBet = (amount) => {
+    clearTurnTimer();
     playerAction({action: "bet", amount: amount});
 
     if(amount > maxTurnBet){
@@ -390,6 +383,7 @@ const Table9 = () => {
 
 
   const handleCheckOrCall = () => {
+    clearTurnTimer();
     playerAction({action: "call"});
     updatePlayerBudget(sittingPosition, players[sittingPosition].budget - maxTurnBet + bets[sittingPosition]);
     setBets(prev => {
@@ -401,6 +395,7 @@ const Table9 = () => {
   };
 
   const handleFold = () => {
+    clearTurnTimer();
     playerAction({action: "fold"});
     setBets(prev => {
       const newBets = [...prev];
@@ -434,6 +429,42 @@ const Table9 = () => {
       setPot(prev => prev + amount);
     });
   }, []);
+
+  // Add this function to handle timer expiration
+  const handleTurnTimeout = () => {
+    if (isMyTurn) {
+      // Default action when time runs out (usually fold)
+      if(maxTurnBet > 0){
+        handleFold();
+      }else{
+        handleCheckOrCall();
+      }
+    }
+  };
+
+  // Function to start timer
+  const startTurnTimer = () => {
+    // Clear any existing timer
+    if (turnTimer) clearTimeout(turnTimer);
+    
+    // Set new timer
+    const newTimer = setTimeout(handleTurnTimeout, TURN_TIME_LIMIT);
+    setTurnTimer(newTimer);
+  };
+
+  // Clear timer when turn ends
+  const clearTurnTimer = () => {
+    if (turnTimer) {
+      clearTimeout(turnTimer);
+      setTurnTimer(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (turnTimer) clearTimeout(turnTimer);
+    };
+  }, [turnTimer]);
 
   return (
     <div className="table-centerer">
@@ -617,7 +648,11 @@ const Table9 = () => {
           )}
         </Box>
 
-        
+        <TurnTimer 
+          isActive={isMyTurn} 
+          onTimeout={handleTurnTimeout}
+        />
+
       </div>
     </div>
   );
