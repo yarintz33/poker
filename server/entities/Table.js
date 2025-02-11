@@ -85,7 +85,9 @@ export default class Table {
   }
 
   removePlayer(socketId) {
-    return this.#playersList.remove(socketId);
+    const position = this.#playersList.remove(socketId);
+    this.#round.clearTurnTimer(); // Clear timer when player leaves
+    return position;
   }
 
   tableState() {

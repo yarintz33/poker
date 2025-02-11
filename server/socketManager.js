@@ -105,9 +105,12 @@ function initializeSocket(server) {
       });
 
       if (nextPosition == -1) {
-        socket.emit("youWasLast", {});
+        // socket.emit("youWasLast", {});
         table.startNextTurn(turnPot);
       }
+      socket.emit("nextTurn", {
+        nextPlayer: nextPosition,
+      });
     });
 
     // socket.on("bet", (amount) => {

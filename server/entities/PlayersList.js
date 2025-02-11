@@ -89,9 +89,13 @@ export default class PlayersList {
 
   //TODO: check if turn ended
   playerAction(socketId, actionData) {
+    console.log("playerAction: ");
+    console.log(actionData);
     let bet = 0;
     let nextPlayerPosition = -1;
+    console.log("socketId: " + socketId);
     const playerNode = this.#playersMap.get(socketId); // this what cause the problem. the playersMap points to the table players.
+    console.log("playerNode.action: " + playerNode.action);
     playerNode.action = actionData.action;
 
     let nextPlayerNode = playerNode.next;
@@ -325,6 +329,10 @@ export default class PlayersList {
     return this.#root;
   }
 
+  getUTGPosition() {
+    return this.#UTGPosition;
+  }
+
   getSize() {
     return this.#size;
   }
@@ -475,5 +483,20 @@ export default class PlayersList {
       node = node.next;
     }
     console.log(node.position);
+  }
+
+  getSocketIdByPosition(position) {
+    let current = this.#root;
+    for (let i = 0; i < this.#size; i++) {
+      if (current.position === position) {
+        return current.player.socketId;
+      }
+      current = current.next;
+    }
+    return null;
+  }
+
+  getCurrentBet() {
+    return this.#maxBet;
   }
 }

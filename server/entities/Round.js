@@ -15,6 +15,8 @@ export default class Round {
   /**@Type {Number} */
   #roundState;
   #boardCards;
+  #turnTimer;
+  #TURN_TIME_LIMIT = 10000; // 10 seconds
 
   static ROUND_STATE = Object.freeze({
     PRE_FLOP: 0,
@@ -36,9 +38,55 @@ export default class Round {
     this.#pot = 0;
   }
 
+  startTurnTimer(position) {
+    // Clear any existing timer
+    if (this.#turnTimer) {
+      clearTimeout(this.#turnTimer);
+    }
+
+    // Start new timer
+    this.#turnTimer = setTimeout(() => {
+      const io = getIO();
+      console.log("startTurnTimer to position: " + position);
+      const socketId = this.#inGame.getSocketIdByPosition(position);
+
+      // Default action based on current bet
+      const currentBet = this.#inGame.getCurrentBet();
+      const actionData = {
+        action: currentBet > 0 ? "fold" : "call",
+      };
+
+      // Process the action
+      const data = this.playerAction(socketId, actionData);
+
+      // Emit the action to all players
+      io.to(this.tableId).emit("playerAction", {
+        position: data.position,
+        nextPlayer: data.nextPosition,
+        playerAction: actionData.action,
+        bet: data.bet,
+      });
+
+      // Start next turn if needed
+      if (data.nextPosition === -1) {
+        this.startNextTurn(data.turnPot);
+      }
+    }, this.#TURN_TIME_LIMIT);
+  }
+
+  clearTurnTimer() {
+    if (this.#turnTimer) {
+      clearTimeout(this.#turnTimer);
+      this.#turnTimer = null;
+    }
+  }
+
   start() {
     this.#inGame.resetRoundState();
     this.#dealer.dealPlayers(this.#inGame);
+    // Start timer for first player (UTG)
+    const UTGPosition = this.#inGame.getUTGPosition();
+    this.startTurnTimer(UTGPosition);
   }
 
   setAllPlayersParticipants() {
@@ -67,7 +115,12 @@ export default class Round {
   }
 
   playerAction(socketId, actionData) {
+    this.clearTurnTimer(); // Clear current timer
     const data = this.#inGame.playerAction(socketId, actionData);
+
+    if (data.nextPosition !== -1) {
+      this.startTurnTimer(data.nextPosition); // Start timer for next player
+    }
 
     return data;
   }
@@ -95,6 +148,7 @@ export default class Round {
   }
 
   startNextTurn(turnPot) {
+    this.clearTurnTimer(); // ?
     this.#pot += turnPot;
     if (
       this.#roundState == Round.ROUND_STATE.RIVER ||
@@ -113,6 +167,12 @@ export default class Round {
         roundState: this.#roundState,
         cards: cards,
       });
+
+      // Start timer for first player in new turn
+      const speaker = this.#inGame.getSpeakerPosition();
+      if (speaker !== -1) {
+        this.startTurnTimer(speaker);
+      }
     }
   }
 }
