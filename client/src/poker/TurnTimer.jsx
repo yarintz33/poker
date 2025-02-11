@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const TurnTimer = ({ isActive, onTimeout }) => {
+const TurnTimer = ({ isActive}) => {
   const [timeLeft, setTimeLeft] = useState(10);
 
   useEffect(() => {
@@ -13,7 +13,6 @@ const TurnTimer = ({ isActive, onTimeout }) => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          onTimeout();
           return 0;
         }
         return prev - 1;
@@ -21,14 +20,13 @@ const TurnTimer = ({ isActive, onTimeout }) => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isActive, onTimeout]);
+  }, [isActive]);
 
   if (!isActive) return null;
 
   return (
-    <div className="turn-timer">
-      {timeLeft}s
-    </div>
+    <>
+    </>
   );
 };
 

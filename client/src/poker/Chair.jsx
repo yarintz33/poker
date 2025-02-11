@@ -20,9 +20,9 @@ import { seatInTable } from "../services/socketHandler";
 
 
 
-
-const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAvatar, userPositoin, onClick }) => {
-
+const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAvatar, userPositoin, onClick, isCurrentTurn }) => {
+  
+  console.log("isCurrentTurn " + isCurrentTurn + " position " + position) ;
 
   const handleSeatClick = () => {
     seatInTable(index, 500);
@@ -31,28 +31,35 @@ const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAv
   };
   
   return (
-    
-    <div className="chair-container">
-      
+    <div className={`chair-container ${position}`}>
       <div 
-        className={`chair ${position} ${userPositoin || isOccupied ? 'occupied' : 'empty'}`}
+        className={`chair ${userPositoin || isOccupied ? 'occupied' : 'empty'} ${isCurrentTurn ? 'current-turn' : ''}`}
         onClick={!userPositoin ? handleSeatClick : undefined}
       >
-        
         {isOccupied ? (
           <div className="player-info">
             <div className="player-name">{playerName}</div>
             {playerAvatar && <img className={styles.avatar} src={playerAvatar} alt="player avatar" />}
-          <div className="player-budget">${playerBudget}</div>
+            <div className="player-budget">${playerBudget}</div>
           </div>
         ) : (
           <div className="empty-chair"> {userPositoin? "empty" : "seat"}</div>
-        )
-        }
-        
+        )}
       </div>
+      {isCurrentTurn && (
+        <svg className="timer-ring" viewBox="0 0 100 100">
+          <circle 
+            cx="50" 
+            cy="50" 
+            r="48" 
+            fill="none" 
+            stroke="#4CAF50"
+            strokeWidth="4"
+            className="timer-circle"
+          />
+        </svg>
+      )}
     </div>
-
   );
 };
 

@@ -1,81 +1,120 @@
+.chair-container {
+  position: absolute;
+  width: 8.8%;
+  height: 17%;
+}
+
 .chair {
-    width: 8.8%;
-    height: 17%;
-    background-color: #333;
-    display: flex; /* Ensure the button is a flex container */
+  width: 100%;  /* Change to fill container */
+  height: 100%; /* Change to fill container */
+  background-color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  /* Absolute positioning for more control */
+}
+
+/* Move all position classes to target chair-container instead of chair */
+.chair-container.top {
+  top: 0%; 
+}
+
+.chair-container.bottom {
+  /* bottom: -15%; */
+  bottom: calc(var(--bottom-value) - 28%); 
+}
+
+.chair-container.right {
+  left: var(--right-value); /* Center horizontally */
+}
+
+.chair-container.left {
+  left: var(--left-value); /* Center horizontally */
+}
+
+.chair-container.center {
+  left: var(--center-value); /* Center horizontally */
+}
+
+.chair-container.up {
+  top: 30%; 
+  /* Position above the table */
+}
+
+.chair-container.down {
+  bottom:16%; /* Position below the table */
+}
+
+.chair-container.left-edge {
+  left: calc(var(--left-edge-value) - 12.8%); /* Position above the table */
+}
+
+.chair-container.right-edge {
+  left: calc(var(--right-edge-value) + 13%); /* Position above the table */
+}
+
+.empty {
+  pointer-events: auto;
+}
+
+.occupied {
+  pointer-events: none;
+}
+
+.player-name {
+  position: absolute;
+  top: -20px; /* Adjust position above the chair */
+  left: 50%; /* Center horizontally relative to the chair */
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  text-align: center;
+  color: #fff; /* Example color */
+}
+
+.player-budget {
+  position: absolute;
+  bottom: -20px; /* Adjust position below the chair */
+  left: 50%; /* Center horizontally relative to the chair */
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  text-align: center;
+  color: #fff; /* Example color */
+}
+
+.timer-ring {
+  position: absolute;
   
-    justify-content: center; /* Center text inside the button */
-    align-items: center;
-    cursor: pointer;
-    border-radius: 50%;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    /* Absolute positioning for more control */
-  }
-  
-  .chair.top {
-    top: 0%; 
-  }
-  .chair.bottom {
-    /* bottom: -15%; */
-    bottom: calc(var(--bottom-value) - 28%); 
-  }
+  transform: translate(-50%, -50%);
+  width: 110%;
+  height: 110%;
+  z-index: 1;  /* Change to positive value */
+}
 
-  .chair.right {
-    left: var(--right-value); /* Center horizontally */
-  }
-  .chair.left {
-    left: var(--left-value); /* Center horizontally */
-  }
+.timer-circle {
+  stroke-dasharray: 301.59;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation: countdown 10s linear forwards;
+  stroke-opacity: 0.8;  /* Add this */
+}
 
-  .chair.center {
-    left: var(--center-value); /* Center horizontally */
+@keyframes countdown {
+  from {
+    stroke-dashoffset: 0;
+    stroke-opacity: 0.8;
   }
-
-  .chair.up {
-    top: 30%; 
-    /* Position above the table */
+  to {
+    stroke-dashoffset: 301.59;
+    stroke-opacity: 0;
   }
+}
 
-  .chair.down {
-    bottom:16%; /* Position below the table */
-  }
-  
-  .chair.left-edge {
-    left: calc(var(--left-edge-value) - 12.8%); /* Position above the table */
-  }
-
-
-  .chair.right-edge {
-    left: calc(var(--right-edge-value) + 13%); /* Position above the table */
-  }
-
-
-
-  .empty {
-    pointer-events: auto;
-  }
-
-  .occupied {
-    pointer-events: none;
-  }
-
-  .player-name {
-    position: absolute;
-    top: -20px; /* Adjust position above the chair */
-    left: 50%; /* Center horizontally relative to the chair */
-    transform: translateX(-50%);
-    font-size: 0.8rem;
-    text-align: center;
-    color: #fff; /* Example color */
-  }
-
-  .player-budget {
-    position: absolute;
-    bottom: -20px; /* Adjust position below the chair */
-    left: 50%; /* Center horizontally relative to the chair */
-    transform: translateX(-50%);
-    font-size: 0.8rem;
-    text-align: center;
-    color: #fff; /* Example color */
-  }
+/* Optional: Add glow effect */
+.current-turn {
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}

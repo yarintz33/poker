@@ -37,6 +37,7 @@ const Table9 = () => {
   const [boardCards, setBoardCards] = useState([]);
   const [bets, setBets] = useState(Array(9).fill(0));
   const [pot, setPot] = useState(0);
+  const [currentTurnPosition, setCurrentTurnPosition] = useState(-1);
 
   const boardPositions = ["board first", "board second", "board third", "board fourth", "board fifth"];
 
@@ -133,6 +134,7 @@ const Table9 = () => {
     setBets(Array(9).fill(0));
     setMaxTurnBet(0);
     findAndSetChipLeaderBudget();
+    setCurrentTurnPosition(data.UTGPosition);
 
     if(data.UTGPosition === sittingPosition){
       setIsMyTurn(true);
@@ -191,15 +193,21 @@ const Table9 = () => {
       
     }
     
-    if(data.nextPlayer == -1){
+    if (data.nextPlayer == -1) {
       resetBets();
+    } 
+
+    setCurrentTurnPosition(data.nextPlayer);
+
+    if(isMyTurn){
+      setIsMyTurn(false);
     }
 
     if (data.nextPlayer == sittingPosition) {
       setIsMyTurn(true);
-      startTurnTimer(); // Start timer for new turn
+      startTurnTimer();
     } else {
-      clearTurnTimer(); // Clear timer if it's not our turn
+      clearTurnTimer();
     }
   });
 
@@ -210,7 +218,7 @@ const Table9 = () => {
   }
 
   useSocketListener("determineWinners", (data) => {
-    console.log("winner position: " + data[0].position + " winning pot: " + data[0].chips);
+    //console.log("winner position: " + data[0].position + " winning pot: " + data[0].chips);
     resetBets();
     setBoardCards([]);
     setCards([]);
@@ -225,9 +233,13 @@ const Table9 = () => {
     });
   });
 
-  useSocketListener("youWasLast", (data) => {
-    resetBets();
+  useSocketListener("nextTurn", (data) => {
+    if(data.nextPlayer == -1){
+      resetBets();
+    }
+    setCurrentTurnPosition(data.nextPlayer);
   });
+
 
   const dealFlop = (cards) => {
     
@@ -250,6 +262,7 @@ const Table9 = () => {
   useSocketListener("dealNext", (data) => {
     setPot(data.pot);
     findAndSetChipLeaderBudget();
+    setCurrentTurnPosition(data.speaker);
 
     if(data.speaker === sittingPosition){
       setIsMyTurn(true);
@@ -386,6 +399,7 @@ const Table9 = () => {
     clearTurnTimer();
     playerAction({action: "call"});
     updatePlayerBudget(sittingPosition, players[sittingPosition].budget - maxTurnBet + bets[sittingPosition]);
+
     setBets(prev => {
       const newBets = [...prev];
       newBets[sittingPosition] = maxTurnBet;
@@ -431,16 +445,16 @@ const Table9 = () => {
   }, []);
 
   // Add this function to handle timer expiration
-  const handleTurnTimeout = () => {
-    if (isMyTurn) {
-      // Default action when time runs out (usually fold)
-      if(maxTurnBet > 0){
-        handleFold();
-      }else{
-        handleCheckOrCall();
-      }
-    }
-  };
+  // const handleTurnTimeout = () => {
+  //   if (isMyTurn) {
+  //     // Default action when time runs out (usually fold)
+  //     if(maxTurnBet > 0){
+  //       handleFold();
+  //     }else{
+  //       handleCheckOrCall();
+  //     }
+  //   }
+  // };
 
   // Function to start timer
   const startTurnTimer = () => {
@@ -448,15 +462,15 @@ const Table9 = () => {
     if (turnTimer) clearTimeout(turnTimer);
     
     // Set new timer
-    const newTimer = setTimeout(handleTurnTimeout, TURN_TIME_LIMIT);
-    setTurnTimer(newTimer);
+    //const newTimer = setTimeout(handleTurnTimeout, TURN_TIME_LIMIT);
+    //setTurnTimer(newTimer);
   };
 
   // Clear timer when turn ends
   const clearTurnTimer = () => {
     if (turnTimer) {
       clearTimeout(turnTimer);
-      setTurnTimer(null);
+      // setTurnTimer(null);
     }
   };
 
@@ -488,6 +502,7 @@ const Table9 = () => {
               playerAvatar={Avatar}
               userPositoin={sittingPosition}
               onClick={() => handleChairClick(index)}
+              isCurrentTurn={index === currentTurnPosition}
             />
             </>
           );
@@ -648,10 +663,10 @@ const Table9 = () => {
           )}
         </Box>
 
-        <TurnTimer 
+        {/* <TurnTimer 
           isActive={isMyTurn} 
-          onTimeout={handleTurnTimeout}
-        />
+          // onTimeout={handleTurnTimeout}
+        /> */}
 
       </div>
     </div>

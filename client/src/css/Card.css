@@ -17,33 +17,8 @@
     animation: dealCard 0.5s ease-out forwards;
   }
 
-  @keyframes dealCard {
-    0% {
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-    100% {
-      /* Final position will be set dynamically based on player position */
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
-  }
-
   .deal-to-top-left {
     animation: dealToTopLeft 0.5s ease-out forwards;
-  }
-
-  @keyframes dealToTopLeft {
-    0% {
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-    100% {
-      left: 30%;
-      top: 20%;
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
   }
 
   .Card.bottom{
@@ -115,11 +90,12 @@
   }
 
   .Card.left-edge{
-    left: calc(var(--left-edge-value) + 1%);
+    left: calc(var(--left-edge-value) - 1%);
   }
 
+
   .Card.left-edge.second{
-    left: calc(var(--left-edge-value) + 2.5%);
+    left: calc(var(--left-edge-value) + 0.5%);
   }
 
   .Card.board{
