@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import "../css/Chair.css";
 import styles from "../css/Chair.module.css";
+import { seatInTable } from "../services/socketHandler";
+import BuyInDialog from "./BuyInDialog";
 
 import AvatatImage from "../images/boy.png";
 import { connectWebSocket } from "../services/socketHandler";
-import { seatInTable } from "../services/socketHandler";
 
 // const chairMap = new Map();
 // chairMap.set("top-right", 0);
@@ -21,13 +22,16 @@ import { seatInTable } from "../services/socketHandler";
 
 
 const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAvatar, userPositoin, onClick, isCurrentTurn }) => {
-  
-  console.log("isCurrentTurn " + isCurrentTurn + " position " + position) ;
+  const [buyInDialogOpen, setBuyInDialogOpen] = useState(false);
+
 
   const handleSeatClick = () => {
-    seatInTable(index, 500);
-    //setAvatar(AvatatImage); // Replace with a real avatar URL
-    onClick(index);
+    setBuyInDialogOpen(true);
+  };
+
+  const handleBuyInConfirm = (amount) => {
+    seatInTable(index, amount);
+    onClick(index, amount);
   };
   
   return (
@@ -59,6 +63,13 @@ const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAv
           />
         </svg>
       )}
+      <BuyInDialog
+        open={buyInDialogOpen}
+        onClose={() => setBuyInDialogOpen(false)}
+        onConfirm={handleBuyInConfirm}
+        maxBuyIn={1000}  // You can make these props dynamic based on table limits
+        minBuyIn={100}
+      />
     </div>
   );
 };

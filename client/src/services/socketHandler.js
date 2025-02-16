@@ -34,8 +34,8 @@ export const standUp = (tableId, playerId, chairIndex) => {
   socket.emit("standUp", tableId, playerId, chairIndex);
 };
 
-export const seatInTable = (chairIndex, budget) => {
-  socket.emit("seatInTable", chairIndex, budget);
+export const seatInTable = (chairIndex, buyInAmount) => {
+  socket.emit("seatInTable", chairIndex, buyInAmount);
 };
 
 export const closeWebSocket = () => {

@@ -101,6 +101,11 @@ const Table9 = () => {
     }, []);
   
 
+  const HandleSeat = (chairIndex, buyInAmount) => {
+    player.budget = buyInAmount;
+    socket.emit("seatInTable", player);
+  };
+
   const setBoard = (cards) => {
     if(!cards) return;
     let newBoardCards = [];
@@ -144,6 +149,7 @@ const Table9 = () => {
   });
 
   useSocketListener("playerJoined", (data) => {
+    console.log("playerJoined: " + data.position);
     const newPlayers = [...players];
     newPlayers[data.position] = data.player;
     setPlayers(newPlayers);
@@ -296,12 +302,12 @@ const Table9 = () => {
 
 
 
-  const handleChairClick = (index) => {
+  const handleChairClick = (index, buyInAmount) => {
     if (!sittingPosition) {
       setSittingPosition(index);
       
       const newPlayers = [...players];
-      newPlayers[index] = { ...player, position: index };
+      newPlayers[index] = { ...player, position: index, budget: buyInAmount };
       
       setPlayers(newPlayers);
     }
@@ -491,17 +497,16 @@ const Table9 = () => {
         {players.map((player, index) => {
           return (
             <>
-            
             <Chair
               key={chairPositions[index]}
               position={chairPositions[index]}
               index={index}
-              isOccupied={!!(player?.name)} // Check for player name instead
+              isOccupied={!!(player?.name)}
               playerName={player?.name}
               playerBudget={player?.budget}
               playerAvatar={Avatar}
               userPositoin={sittingPosition}
-              onClick={() => handleChairClick(index)}
+              onClick={handleChairClick}
               isCurrentTurn={index === currentTurnPosition}
             />
             </>
@@ -627,7 +632,7 @@ const Table9 = () => {
                     }
                   }}
                 />
-                 {/* )} */}
+                 
               </Box>
               
               {/* Action buttons */}
