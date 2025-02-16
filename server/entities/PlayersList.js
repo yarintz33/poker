@@ -89,13 +89,9 @@ export default class PlayersList {
 
   //TODO: check if turn ended
   playerAction(socketId, actionData) {
-    console.log("playerAction: ");
-    console.log(actionData);
     let bet = 0;
     let nextPlayerPosition = -1;
-    console.log("socketId: " + socketId);
     const playerNode = this.#playersMap.get(socketId); // this what cause the problem. the playersMap points to the table players.
-    console.log("playerNode.action: " + playerNode.action);
     playerNode.action = actionData.action;
 
     let nextPlayerNode = playerNode.next;
