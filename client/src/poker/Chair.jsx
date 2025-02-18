@@ -29,9 +29,9 @@ const Chair = ({ position, index, isOccupied, playerName, playerBudget, playerAv
     setBuyInDialogOpen(true);
   };
 
-  const handleBuyInConfirm = (amount) => {
-    seatInTable(index, amount);
-    onClick(index, amount);
+  const handleBuyInConfirm = (amount, nickname) => {
+    seatInTable(index, amount, nickname);
+    onClick(index, amount, nickname);
   };
   
   return (

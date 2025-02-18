@@ -13,6 +13,7 @@ import {
 
 const BuyInDialog = ({ open, onClose, onConfirm, maxBuyIn = 1000, minBuyIn = 100 }) => {
   const [buyInAmount, setBuyInAmount] = useState(minBuyIn);
+  const [nickname, setNickname] = useState('');
 
   const handleSliderChange = (event, newValue) => {
     setBuyInAmount(newValue);
@@ -25,18 +26,31 @@ const BuyInDialog = ({ open, onClose, onConfirm, maxBuyIn = 1000, minBuyIn = 100
     }
   };
 
+  const handleNicknameChange = (event) => {
+    setNickname(event.target.value);
+  };
+
   const handleConfirm = () => {
-    onConfirm(buyInAmount);
+    onConfirm(buyInAmount, nickname || 'Anonymous');
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Buy In</DialogTitle>
+      <DialogTitle>Join Table</DialogTitle>
       <DialogContent>
         <Box sx={{ width: 300, mt: 2 }}>
+          <TextField
+            sx={{ mb: 3 }}
+            label="Nickname"
+            type="text"
+            value={nickname}
+            onChange={handleNicknameChange}
+            placeholder="Anonymous"
+            fullWidth
+          />
           <Typography gutterBottom>
-            Amount: ${buyInAmount}
+            Buy-in Amount: ${buyInAmount}
           </Typography>
           <Slider
             value={buyInAmount}

@@ -302,12 +302,17 @@ const Table9 = () => {
 
 
 
-  const handleChairClick = (index, buyInAmount) => {
+  const handleChairClick = (index, buyInAmount, nickname) => {
     if (!sittingPosition) {
       setSittingPosition(index);
       
       const newPlayers = [...players];
-      newPlayers[index] = { ...player, position: index, budget: buyInAmount };
+      newPlayers[index] = { 
+        ...player, 
+        position: index, 
+        budget: buyInAmount,
+        name: nickname 
+      };
       
       setPlayers(newPlayers);
     }
