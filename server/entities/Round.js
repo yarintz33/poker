@@ -16,7 +16,7 @@ export default class Round {
   #roundState;
   #boardCards;
   #turnTimer;
-  #TURN_TIME_LIMIT = 10000; // 10 seconds
+  #TURN_TIME_LIMIT = 15000; // 15 seconds
 
   static ROUND_STATE = Object.freeze({
     PRE_FLOP: 0,

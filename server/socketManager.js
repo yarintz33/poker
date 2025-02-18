@@ -56,16 +56,16 @@ function initializeSocket(server) {
       });
     });
 
-    socket.on("seatInTable", (chairIndex, budget) => {
+    socket.on("seatInTable", (chairIndex, budget, nickname) => {
       // should add chair isn't occupied check..
       const connectedClient = connectedClients.get(socket.id);
+      if (!connectedClient) {
+        console.log("No connected client found for socket ID:", socket.id);
+        return;
+      }
       const { player, tableId } = connectedClient;
-      //player.budget = budget;
-      //const playerNode = new PlayerNode(player, chairIndex);
-      //connectedClient.playerNode = playerNode;
-      //delete connectedClient.player;
       let table = tables.get(tableId);
-
+      player.name = nickname;
       table.addPlayer(player, socket.id, chairIndex, budget);
       socket.to(tableId).emit("playerJoined", {
         player: {
